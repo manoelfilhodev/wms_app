@@ -79,7 +79,7 @@ class _LoginPageState extends State<LoginPage> {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     const Text(
-                      "Acesso ao Sistema",
+                      "WMS - SYSTEX",
                       style: TextStyle(
                         fontSize: 22,
                         fontWeight: FontWeight.bold,
