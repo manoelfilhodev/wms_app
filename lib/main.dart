@@ -3,21 +3,21 @@ import 'modules/auth/login_page.dart';
 import 'modules/dashboard/dashboard_page.dart';
 
 void main() {
-  runApp(const WmsApp());
+  runApp(const MyApp());
 }
 
-class WmsApp extends StatelessWidget {
-  const WmsApp({super.key});
+class MyApp extends StatelessWidget {
+  const MyApp({super.key});
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      title: 'Systex WMS',
       debugShowCheckedModeBanner: false,
-      title: 'WMS App',
       theme: ThemeData(
         primarySwatch: Colors.blue,
-        visualDensity: VisualDensity.adaptivePlatformDensity,
       ),
+      // rota inicial ao abrir o app
       initialRoute: '/login',
       routes: {
         '/login': (context) => const LoginPage(),
