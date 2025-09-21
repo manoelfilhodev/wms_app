@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:dio/dio.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:wms_app/utils/notifier.dart';
+import 'package:wms_app/utils/user_service.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -25,8 +25,8 @@ class _LoginPageState extends State<LoginPage> {
       final response = await Dio().post(
         "https://systex.com.br/wms/public/api/login",
         data: {
-          "email": _userController.text.trim(),   // ajuste conforme API
-          "password": _passController.text.trim(), // ajuste conforme API
+          "email": _userController.text.trim(),   // ajuste se a API usar 'login'
+          "password": _passController.text.trim(), // ajuste se a API usar 'senha'
         },
       );
 
@@ -36,11 +36,12 @@ class _LoginPageState extends State<LoginPage> {
         final token = data['token'] ?? '';
         final user = data['user'] ?? {};
 
-        if (token.isNotEmpty) {
-          final prefs = await SharedPreferences.getInstance();
-          await prefs.setString('token', token);
-          await prefs.setString('user_nome', user['nome'] ?? '');
-          await prefs.setInt('user_id', user['id'] ?? 0);
+        if (token.isNotEmpty && user.isNotEmpty) {
+          await UserService.saveUser(
+            token: token,
+            id: user['id'] ?? 0,
+            nome: user['nome'] ?? '',
+          );
 
           if (!mounted) return;
           Notifier.success(context, "Login realizado com sucesso!");
