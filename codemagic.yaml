@@ -7,11 +7,6 @@ workflows:
       android: latest
       vars:
         PACKAGE_NAME: "com.systex.wms"
-        # 🔐 Essas variáveis você só precisa configurar quando for publicar
-        CM_KEYSTORE: Encrypted(...)
-        CM_KEYSTORE_PASSWORD: Encrypted(...)
-        CM_KEY_ALIAS: Encrypted(...)
-        CM_KEY_PASSWORD: Encrypted(...)
     cache:
       cache_paths:
         - $FLUTTER_ROOT/.pub-cache
@@ -34,38 +29,7 @@ workflows:
     publishing:
       email:
         recipients:
-          - "manoel.filho.mf@icloud.com" 
-        notify:
-          success: true
-          failure: true
-
-  flutter-ios:
-    name: Flutter iOS Build
-    max_build_duration: 60
-    environment:
-      flutter: stable
-      xcode: latest
-      cocoapods: default
-      vars:
-        BUNDLE_ID: "com.systex.wms"
-        APP_STORE_CONNECT_KEY_IDENTIFIER: Encrypted(...)
-        APP_STORE_CONNECT_ISSUER_ID: Encrypted(...)
-        APP_STORE_CONNECT_PRIVATE_KEY: Encrypted(...)
-    scripts:
-      - name: Install dependencies
-        script: flutter pub get
-      - name: Analyze project
-        script: flutter analyze
-      - name: Run tests
-        script: flutter test
-      - name: Build iOS (release)
-        script: flutter build ipa --release --no-codesign
-    artifacts:
-      - build/ios/ipa/*.ipa
-    publishing:
-      email:
-        recipients:
-          - "manoel.filho.mf@"
+          - "manoel.filho.mf@icloud.com"
         notify:
           success: true
           failure: true
