@@ -1,59 +1,63 @@
-#📱 Systex WMS 4.0 – App Mobile
+# 📱 Systex WMS 4.0 – App Mobile
 
-Aplicativo mobile (Flutter) integrado ao **Systex WMS 4.0**, projetado para apoiar operações logísticas em dispositivos móveis, tablets e coletores de dados.  
-O app permite acompanhar e registrar processos logísticos em tempo real, funcionando tanto online quanto offline (PWA).
+[![Flutter](https://img.shields.io/badge/Flutter-3.x-blue?logo=flutter)](https://flutter.dev/)
+[![Dart](https://img.shields.io/badge/Dart-2.x-blue?logo=dart)](https://dart.dev/)
+[![Codemagic](https://img.shields.io/badge/Codemagic-CI%2FCD-brightgreen?logo=codemagic)](https://codemagic.io)
+[![License](https://img.shields.io/badge/license-Proprietary-red.svg)]()
+
+Aplicativo mobile **Systex WMS 4.0** desenvolvido em **Flutter** e integrado ao backend Laravel.  
+Projetado para rodar em **coletores de dados, tablets e smartphones**, com suporte a funcionamento **online/offline (PWA)**.  
 
 ---
 
 ## 🚀 Tecnologias Utilizadas
-- [Flutter](https://flutter.dev/) 3.x
-- Dart
-- Integração com API Laravel (REST)
+- Flutter 3.x
+- Dart 2.x
 - Dio (HTTP Client)
 - SharedPreferences (armazenamento local)
-- Material 3 + Widgets customizados
+- Material 3
+- Integração REST API com Laravel WMS 4.0
 
 ---
 
 ## 📂 Estrutura de Pastas
-
 lib/
-├── core/ # Configurações, cliente API, armazenamento
+├── core/ # Configurações, cliente API, storage
 ├── models/ # Modelos (User, Recebimento, etc.)
-├── services/ # Comunicação com a API (Auth, Recebimento, etc.)
+├── services/ # Comunicação com API (Auth, Recebimento, etc.)
 ├── screens/ # Telas (Login, Dashboard, Recebimento, etc.)
-├── widgets/ # Componentes reutilizáveis (cards, botões, etc.)
-└── main.dart # Ponto de entrada da aplicação
+├── widgets/ # Componentes reutilizáveis
+└── main.dart # Ponto de entrada
 
 
 ---
 
 ## ⚙️ Funcionalidades
 ✅ Login integrado ao backend Laravel  
-✅ Dashboard com KPIs de produtividade  
-✅ Gestão de Recebimento (lista e detalhes)  
-✅ Expedição e Transferências  
-✅ Inventário e Contagem de Paletes/Kits  
+✅ Dashboard com KPIs em tempo real  
+✅ Gestão de Recebimento, Expedição e Inventário  
+✅ Contagem de Paletes e Kits  
 ✅ Suporte a múltiplos usuários e permissões  
-✅ PWA (funcionamento offline/online em coletores)  
+✅ PWA para uso em **coletores offline**  
 ✅ Compatível com Android (APK/AAB) e iOS (IPA)  
 
 ---
 
 ## 📊 Dashboard
-- Gráficos de produtividade por setor  
+- Indicadores de produtividade por setor  
 - KPIs de recebimento, armazenagem e expedição  
-- Status em tempo real das operações  
+- Gráficos em tempo real  
 
 ---
 
 ## 🔧 Instalação e Build
 
 ### Pré-requisitos
-- Flutter 3.x (instalado e configurado)  
+- Flutter 3.x  
 - Dart SDK  
 - Git  
-- (Opcional) Android SDK / Xcode para builds móveis  
+- Android SDK (para gerar APK/AAB)  
+- Xcode (para builds iOS)  
 
 ### Passos
 ```bash
@@ -77,13 +81,16 @@ flutter build appbundle --release
 
 🛠️ Roadmap
 
-Integração completa com módulos de Expedição e Inventário
+📦 Integração completa com módulos de Expedição e Inventário
 
-Sincronização offline/online avançada (IndexedDB + Laravel Sync)
+🔄 Sincronização avançada offline/online (IndexedDB + Laravel Sync)
 
-Implementação de notificações push
+🔔 Implementação de notificações push
 
-Publicação na Google Play e App Store
+☁️ Publicação contínua via Codemagic
+
+📲 Disponibilização na Google Play e App Store
+
 
 📜 Licença
 
