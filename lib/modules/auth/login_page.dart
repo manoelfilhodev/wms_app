@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:dio/dio.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:wms_app/utils/notifier.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -21,24 +23,36 @@ class _LoginPageState extends State<LoginPage> {
 
     try {
       final response = await Dio().post(
-        "https://systex.com.br/api/login", // ajuste se necessário
+        "https://systex.com.br/wms/public/api/login",
         data: {
-          "login": _userController.text.trim(),
-          "senha": _passController.text.trim(),
+          "email": _userController.text.trim(),   // ajuste conforme API
+          "password": _passController.text.trim(), // ajuste conforme API
         },
       );
 
       if (response.statusCode == 200) {
-        Navigator.pushReplacementNamed(context, "/dashboard");
+        final data = response.data;
+
+        final token = data['token'] ?? '';
+        final user = data['user'] ?? {};
+
+        if (token.isNotEmpty) {
+          final prefs = await SharedPreferences.getInstance();
+          await prefs.setString('token', token);
+          await prefs.setString('user_nome', user['nome'] ?? '');
+          await prefs.setInt('user_id', user['id'] ?? 0);
+
+          if (!mounted) return;
+          Notifier.success(context, "Login realizado com sucesso!");
+          Navigator.pushReplacementNamed(context, "/dashboard");
+        } else {
+          Notifier.error(context, "Resposta inválida do servidor");
+        }
       } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Falha no login")),
-        );
+        Notifier.error(context, "Usuário ou senha inválidos");
       }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Erro: $e")),
-      );
+      Notifier.warning(context, "Erro de conexão: $e");
     }
 
     setState(() => _loading = false);
