@@ -29,7 +29,7 @@ class DashboardPage extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text(
-          "Systex WMS 4.0",
+          "",
           style: TextStyle(fontWeight: FontWeight.bold),
         ),
         centerTitle: false, // agora fica no canto superior ESQUERDO

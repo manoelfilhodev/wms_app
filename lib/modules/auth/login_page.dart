@@ -23,10 +23,10 @@ class _LoginPageState extends State<LoginPage> {
 
     try {
       final response = await Dio().post(
-        "https://systex.com.br/wms/public/api/login",
+        "https://systex.com.br/wms/public/api/login", // 🔗 ajuste conforme sua API real
         data: {
-          "email": _userController.text.trim(),   // ajuste se a API usar 'login'
-          "password": _passController.text.trim(), // ajuste se a API usar 'senha'
+          "email": _userController.text.trim(),   // troque para "login" se for matrícula
+          "password": _passController.text.trim(), // troque para "senha" se sua API usar esse nome
         },
       );
 
@@ -36,15 +36,18 @@ class _LoginPageState extends State<LoginPage> {
         final token = data['token'] ?? '';
         final user = data['user'] ?? {};
 
-        if (token.isNotEmpty && user.isNotEmpty) {
+        if (user.isNotEmpty) {
+          // Salva dados do usuário no SharedPreferences
           await UserService.saveUser(
             token: token,
-            id: user['id'] ?? 0,
+            id: user['id_user'] ?? user['id'] ?? 0,
             nome: user['nome'] ?? '',
+            nivel: user['nivel'] ?? '',
           );
 
           if (!mounted) return;
-          Notifier.success(context, "Login realizado com sucesso!");
+          Notifier.success(context, "Bem-vindo, ${user['nome'] ?? ''}!");
+
           Navigator.pushReplacementNamed(context, "/dashboard");
         } else {
           Notifier.error(context, "Resposta inválida do servidor");
