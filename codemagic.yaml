@@ -3,7 +3,7 @@ workflows:
     name: Flutter Android Build
     max_build_duration: 60
     environment:
-      flutter: "3.24.3"   # 👈 fixa versão estável
+      flutter: "3.35.3"   # 👈 fixa versão estável
       xcode: latest
     cache:
       cache_paths:
