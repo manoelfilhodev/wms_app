@@ -1,10 +1,8 @@
 import 'package:flutter/material.dart';
-import 'contagem_livre_page.dart';
-import 'contagem_dirigida_page.dart';
-import 'ajustes_estoque_page.dart';
+import 'conferencia_page.dart';
 
-class InventarioPage extends StatelessWidget {
-  const InventarioPage({super.key});
+class RecebimentoPage extends StatelessWidget {
+  const RecebimentoPage({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -13,10 +11,10 @@ class InventarioPage extends StatelessWidget {
     return Scaffold(
       backgroundColor: theme.scaffoldBackgroundColor,
       appBar: AppBar(
-        title: const Text("Inventário"),
+        title: const Text("Recebimento"),
         centerTitle: false,
-        elevation: 1.5,
-        backgroundColor: theme.cardTheme.color?.withOpacity(0.98),
+        elevation: 1.5, // leve sombra (igual Inventário)
+        backgroundColor: theme.cardTheme.color, // topo levemente destacado
       ),
       body: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 20.0),
@@ -27,44 +25,37 @@ class InventarioPage extends StatelessWidget {
           children: [
             _buildMenuCard(
               context,
+              icon: Icons.assignment_turned_in_outlined,
               emoji: "📋",
-              title: "Contagem Livre",
-              subtitle: "Realizar inventário livre no armazém",
+              title: "Conferência",
+              subtitle: "Registrar itens recebidos",
               onTap: () {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => const ContagemLivrePage(),
+                    builder: (context) => const ConferenciaPage(),
                   ),
                 );
               },
             ),
             _buildMenuCard(
               context,
-              emoji: "📍",
-              title: "Contagem Dirigida",
-              subtitle: "Executar tarefas dirigidas de contagem",
+              icon: Icons.library_books_outlined,
+              emoji: "🧾",
+              title: "Notas Recebidas",
+              subtitle: "Consultar histórico de notas",
               onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => const ContagemDirigidaPage(),
-                  ),
-                );
+                // TODO: implementar tela de consulta
               },
             ),
             _buildMenuCard(
               context,
-              emoji: "⚖️",
-              title: "Ajustes de Estoque",
-              subtitle: "Corrigir divergências detectadas",
+              icon: Icons.qr_code_scanner_outlined,
+              emoji: "📦",
+              title: "Etiquetagem",
+              subtitle: "Gerar etiquetas de recebimento",
               onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => const AjustesEstoquePage(),
-                  ),
-                );
+                // TODO: implementar tela
               },
             ),
           ],
@@ -75,6 +66,7 @@ class InventarioPage extends StatelessWidget {
 
   Widget _buildMenuCard(
     BuildContext context, {
+    required IconData icon,
     required String emoji,
     required String title,
     required String subtitle,
@@ -89,13 +81,18 @@ class InventarioPage extends StatelessWidget {
         color: theme.cardTheme.color?.withOpacity(0.95),
         elevation: theme.cardTheme.elevation ?? 3,
         shape: theme.cardTheme.shape ??
-            RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
         child: Padding(
           padding: const EdgeInsets.all(20),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Text(emoji, style: const TextStyle(fontSize: 26)),
+              Text(
+                emoji,
+                style: const TextStyle(fontSize: 26),
+              ),
               const SizedBox(height: 10),
               Text(
                 title,

@@ -25,8 +25,7 @@ class _ArmazenagemPageState extends State<ArmazenagemPage> {
   String skuBanco = "";
   String posicaoMessage = "";
   bool carregando = false;
-
-  int? usuarioId; // agora dinâmico
+  int? usuarioId;
 
   @override
   void initState() {
@@ -41,7 +40,6 @@ class _ArmazenagemPageState extends State<ArmazenagemPage> {
     });
   }
 
-  // 🔎 Valida posição no banco
   Future<void> validarPosicao(String posicao) async {
     try {
       final url = Uri.parse(
@@ -145,7 +143,6 @@ class _ArmazenagemPageState extends State<ArmazenagemPage> {
         descricaoProduto = "";
         skuBanco = "";
         posicaoMessage = "";
-
         FocusScope.of(context).requestFocus(posicaoFocus);
       } else {
         _showDialog(DialogType.error, "Erro", "Erro: ${response.body}");
@@ -157,7 +154,6 @@ class _ArmazenagemPageState extends State<ArmazenagemPage> {
     setState(() => carregando = false);
   }
 
-  // 🎨 Caixa de diálogo estilo SweetAlert
   void _showDialog(DialogType type, String title, String desc) {
     AwesomeDialog(
       context: context,
@@ -182,87 +178,145 @@ class _ArmazenagemPageState extends State<ArmazenagemPage> {
 
   @override
   Widget build(BuildContext context) {
-    return MainLayout(
-      title: "Armazenagem",
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          children: [
-            // Campo posição
-            TextField(
-              controller: posicaoController,
-              focusNode: posicaoFocus,
-              decoration: const InputDecoration(
-                labelText: "Posição",
-                border: OutlineInputBorder(),
+    final theme = Theme.of(context);
+
+    return Scaffold(
+      backgroundColor: theme.scaffoldBackgroundColor,
+      appBar: AppBar(title: const Text("Armazenagem")),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(16),
+        child: Container(
+          decoration: BoxDecoration(
+            color: const Color(0xFF404954), // Fundo do card igual às outras telas
+            borderRadius: BorderRadius.circular(12),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.35),
+                offset: const Offset(0, 6),
+                blurRadius: 16,
               ),
-              onSubmitted: (value) async => await validarPosicao(value),
-            ),
-            if (posicaoMessage.isNotEmpty)
-              Padding(
-                padding: const EdgeInsets.only(top: 6),
-                child: Text(
-                  posicaoMessage,
-                  style: TextStyle(
-                    color: posicaoMessage.contains("✅")
-                        ? Colors.green
-                        : Colors.red,
+            ],
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(20),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Text(
+                  "Dados da Armazenagem",
+                  style: theme.textTheme.titleMedium?.copyWith(
+                    color: const Color(0xFF9FA8DA),
+                    fontWeight: FontWeight.w700,
                   ),
                 ),
-              ),
-            const SizedBox(height: 16),
+                const SizedBox(height: 20),
 
-            // Campo SKU/EAN
-            TextField(
-              controller: skuController,
-              focusNode: skuFocus,
-              decoration: const InputDecoration(
-                labelText: "SKU / EAN",
-                border: OutlineInputBorder(),
-              ),
-              onSubmitted: (value) async {
-                await buscarDescricao(value);
-                FocusScope.of(context).requestFocus(quantidadeFocus);
-              },
-            ),
-            const SizedBox(height: 8),
-            if (descricaoProduto.isNotEmpty)
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text("Descrição: $descricaoProduto",
-                      style: const TextStyle(
-                          fontSize: 16, fontWeight: FontWeight.bold)),
-                  Text("SKU Banco: $skuBanco",
-                      style: const TextStyle(fontSize: 14)),
-                ],
-              ),
-            const SizedBox(height: 16),
-
-            // Campo quantidade
-            TextField(
-              controller: quantidadeController,
-              focusNode: quantidadeFocus,
-              keyboardType: TextInputType.number,
-              decoration: const InputDecoration(
-                labelText: "Quantidade",
-                border: OutlineInputBorder(),
-              ),
-              onSubmitted: (_) => armazenarProduto(),
-            ),
-            const SizedBox(height: 24),
-
-            carregando
-                ? const CircularProgressIndicator()
-                : ElevatedButton.icon(
-                    onPressed: armazenarProduto,
-                    icon: const Icon(Icons.save),
-                    label: const Text("Salvar"),
+                // Campo: posição
+                TextField(
+                  controller: posicaoController,
+                  focusNode: posicaoFocus,
+                  decoration: const InputDecoration(
+                    labelText: "Posição",
+                    prefixIcon: Icon(Icons.location_on_outlined),
                   ),
-          ],
+                  onSubmitted: (value) async => await validarPosicao(value),
+                ),
+                if (posicaoMessage.isNotEmpty)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 6),
+                    child: Text(
+                      posicaoMessage,
+                      style: TextStyle(
+                        color: posicaoMessage.contains("✅")
+                            ? Colors.greenAccent
+                            : Colors.redAccent,
+                        fontSize: 13,
+                      ),
+                    ),
+                  ),
+                const SizedBox(height: 16),
+
+                // Campo SKU / EAN
+                TextField(
+                  controller: skuController,
+                  focusNode: skuFocus,
+                  decoration: const InputDecoration(
+                    labelText: "SKU / EAN",
+                    prefixIcon: Icon(Icons.qr_code_2_outlined),
+                  ),
+                  onSubmitted: (value) async {
+                    await buscarDescricao(value);
+                    FocusScope.of(context).requestFocus(quantidadeFocus);
+                  },
+                ),
+                const SizedBox(height: 8),
+
+                if (descricaoProduto.isNotEmpty)
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        "Descrição: $descricaoProduto",
+                        style: theme.textTheme.bodyLarge?.copyWith(
+                          fontWeight: FontWeight.w600,
+                          color: theme.colorScheme.primary,
+                        ),
+                      ),
+                      if (skuBanco.isNotEmpty)
+                        Text(
+                          "SKU Banco: $skuBanco",
+                          style: theme.textTheme.bodySmall,
+                        ),
+                    ],
+                  ),
+                const SizedBox(height: 16),
+
+                // Campo quantidade
+                TextField(
+                  controller: quantidadeController,
+                  focusNode: quantidadeFocus,
+                  keyboardType: TextInputType.number,
+                  decoration: const InputDecoration(
+                    labelText: "Quantidade",
+                    prefixIcon: Icon(Icons.numbers_rounded),
+                  ),
+                  onSubmitted: (_) => armazenarProduto(),
+                ),
+                const SizedBox(height: 24),
+
+                carregando
+                    ? const Center(
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
+                    : ElevatedButton.icon(
+                        onPressed: armazenarProduto,
+                        icon: const Icon(Icons.save_outlined),
+                        label: const Text("Salvar"),
+                      ),
+                const SizedBox(height: 16),
+
+                OutlinedButton.icon(
+                  onPressed: () => Navigator.pop(context),
+                  icon: const Icon(Icons.arrow_back_ios_new_rounded),
+                  label: const Text("Voltar"),
+                ),
+                const SizedBox(height: 16),
+
+                Center(
+                  child: Text(
+                    "Powered by Laravel API • Systex Infra Azure",
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color:
+                          theme.textTheme.bodySmall?.color?.withOpacity(0.7),
+                      fontSize: 11,
+                    ),
+                  ),
+                )
+              ],
+            ),
+          ),
         ),
       ),
     );
   }
 }
-

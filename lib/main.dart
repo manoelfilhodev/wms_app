@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'modules/auth/login_page.dart';
 import 'modules/dashboard/dashboard_page.dart';
+import 'core/app_theme.dart';
 
 void main() {
   runApp(const MyApp());
@@ -14,10 +15,9 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Systex WMS',
       debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
-      ),
-      // rota inicial ao abrir o app
+      theme: AppTheme.lightTheme,
+      darkTheme: AppTheme.darkTheme,
+      themeMode: ThemeMode.system, // alterna automático light/dark
       initialRoute: '/login',
       routes: {
         '/login': (context) => const LoginPage(),

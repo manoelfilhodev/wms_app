@@ -12,32 +12,35 @@ class LoginPage extends StatefulWidget {
 
 class _LoginPageState extends State<LoginPage> {
   final _formKey = GlobalKey<FormState>();
-  final TextEditingController _userController = TextEditingController();
-  final TextEditingController _passController = TextEditingController();
+  final _userController = TextEditingController();
+  final _passController = TextEditingController();
   bool _loading = false;
+  bool _obscurePass = true;
 
   Future<void> _login() async {
     if (!_formKey.currentState!.validate()) return;
-
     setState(() => _loading = true);
 
     try {
-      final response = await Dio().post(
-        "https://systex.com.br/wms/public/api/login", // 🔗 ajuste conforme sua API real
+      final dio = Dio();
+      final response = await dio.post(
+        "https://systex.com.br/wms/public/api/login",
         data: {
-          "email": _userController.text.trim(),   // troque para "login" se for matrícula
-          "password": _passController.text.trim(), // troque para "senha" se sua API usar esse nome
+          "email": _userController.text.trim(),
+          "password": _passController.text.trim(),
         },
+        options: Options(
+          headers: {'Accept': 'application/json'},
+          validateStatus: (status) => true,
+        ),
       );
 
-      if (response.statusCode == 200) {
+      if (response.statusCode == 200 && response.data != null) {
         final data = response.data;
-
         final token = data['token'] ?? '';
         final user = data['user'] ?? {};
 
         if (user.isNotEmpty) {
-          // Salva dados do usuário no SharedPreferences
           await UserService.saveUser(
             token: token,
             id: user['id_user'] ?? user['id'] ?? 0,
@@ -47,7 +50,6 @@ class _LoginPageState extends State<LoginPage> {
 
           if (!mounted) return;
           Notifier.success(context, "Bem-vindo, ${user['nome'] ?? ''}!");
-
           Navigator.pushReplacementNamed(context, "/dashboard");
         } else {
           Notifier.error(context, "Resposta inválida do servidor");
@@ -64,81 +66,132 @@ class _LoginPageState extends State<LoginPage> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final textColor = theme.textTheme.bodyLarge?.color;
+
     return Scaffold(
-      backgroundColor: Colors.grey[100],
+      backgroundColor: theme.scaffoldBackgroundColor,
       body: Center(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(24),
-          child: Card(
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
-            ),
-            elevation: 4,
-            child: Padding(
-              padding: const EdgeInsets.all(20),
-              child: Form(
-                key: _formKey,
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const Text(
-                      "WMS - SYSTEX",
-                      style: TextStyle(
-                        fontSize: 22,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    const Text(
-                      "Informe suas credenciais para acessar o painel.",
-                      style: TextStyle(color: Colors.grey, fontSize: 14),
-                      textAlign: TextAlign.center,
-                    ),
-                    const SizedBox(height: 20),
+          child: SizedBox(
+            width: 400,
+            child: Card(
+              // usa o tema automático do Card
+              elevation: theme.cardTheme.elevation,
+              shape: theme.cardTheme.shape,
+              child: Padding(
+                padding: const EdgeInsets.all(24),
+                child: Form(
+                  key: _formKey,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(Icons.warehouse_rounded,
+                          size: 56, color: Color(0xFF727CF5)),
 
-                    // Usuário
-                    TextFormField(
-                      controller: _userController,
-                      decoration: const InputDecoration(
-                        labelText: "Usuário",
-                        border: OutlineInputBorder(),
-                        prefixIcon: Icon(Icons.person_outline),
-                      ),
-                      validator: (v) =>
-                          v!.isEmpty ? "Informe o usuário" : null,
-                    ),
-                    const SizedBox(height: 16),
-
-                    // Senha
-                    TextFormField(
-                      controller: _passController,
-                      obscureText: true,
-                      decoration: const InputDecoration(
-                        labelText: "Senha",
-                        border: OutlineInputBorder(),
-                        prefixIcon: Icon(Icons.lock_outline),
-                      ),
-                      validator: (v) =>
-                          v!.isEmpty ? "Informe a senha" : null,
-                    ),
-                    const SizedBox(height: 24),
-
-                    // Botão login
-                    SizedBox(
-                      width: double.infinity,
-                      child: ElevatedButton(
-                        onPressed: _loading ? null : _login,
-                        style: ElevatedButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(vertical: 14),
-                          backgroundColor: Colors.blue,
+                      const SizedBox(height: 8),
+                      Text(
+                        "Systex",
+                        style: theme.textTheme.headlineSmall?.copyWith(
+                          fontWeight: FontWeight.bold,
+                          color: theme.primaryColor,
                         ),
-                        child: _loading
-                            ? const CircularProgressIndicator(
-                                color: Colors.white, strokeWidth: 2)
-                            : const Text("Login"),
                       ),
-                    ),
-                  ],
+                      const SizedBox(height: 4),
+                      Text(
+                        "Gestão de Armazéns Inteligente",
+                        style: theme.textTheme.bodyMedium,
+                      ),
+
+                      const Divider(height: 32),
+
+                      // Usuário
+                      TextFormField(
+                        controller: _userController,
+                        decoration: const InputDecoration(
+                          labelText: "Usuário ou e-mail",
+                          prefixIcon: Icon(Icons.person_outline),
+                        ),
+                        validator: (v) =>
+                            v!.isEmpty ? "Informe o usuário" : null,
+                      ),
+                      const SizedBox(height: 16),
+
+                      // Senha
+                      TextFormField(
+                        controller: _passController,
+                        obscureText: _obscurePass,
+                        decoration: InputDecoration(
+                          labelText: "Senha",
+                          prefixIcon: const Icon(Icons.lock_outline),
+                          suffixIcon: IconButton(
+                            icon: Icon(
+                              _obscurePass
+                                  ? Icons.visibility_off
+                                  : Icons.visibility,
+                            ),
+                            onPressed: () =>
+                                setState(() => _obscurePass = !_obscurePass),
+                          ),
+                        ),
+                        validator: (v) =>
+                            v!.isEmpty ? "Informe a senha" : null,
+                      ),
+                      const SizedBox(height: 24),
+
+                      // Botão login (usa tema global)
+                      SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton(
+                          onPressed: _loading ? null : _login,
+                          child: _loading
+                              ? const SizedBox(
+                                  height: 18,
+                                  width: 18,
+                                  child: CircularProgressIndicator(
+                                    color: Colors.white,
+                                    strokeWidth: 2,
+                                  ),
+                                )
+                              : const Text("Entrar no Sistema"),
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+
+                      // Rodapé
+                      Column(
+                        children: [
+                          const Divider(height: 32),
+                          Text(
+                            "Conexão segura via SSL • Laravel 10 backend",
+                            style: theme.textTheme.bodySmall?.copyWith(
+                              color: theme.textTheme.bodyMedium?.color,
+                              fontSize: 12,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                          const SizedBox(height: 6),
+                          Text(
+                            "Hospedado na Azure Cloud • Infraestrutura Systex",
+                            style: theme.textTheme.bodySmall?.copyWith(
+                              color: theme.textTheme.bodyMedium?.color,
+                              fontSize: 12,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                          const SizedBox(height: 12),
+                          Text(
+                            "© 2025 Systex Sistemas Inteligentes",
+                            style: theme.textTheme.bodySmall?.copyWith(
+                              color: textColor?.withOpacity(0.6),
+                              fontSize: 11,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),
