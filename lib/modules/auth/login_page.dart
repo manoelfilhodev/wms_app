@@ -26,34 +26,32 @@ class _LoginPageState extends State<LoginPage> {
       final response = await dio.post(
         "https://systex.com.br/wms/public/api/login",
         data: {
-          "email": _userController.text.trim(),
+          "username": _userController.text.trim(),
           "password": _passController.text.trim(),
         },
         options: Options(
           headers: {'Accept': 'application/json'},
-          validateStatus: (status) => true,
+          validateStatus: (_) => true,
         ),
       );
 
-      if (response.statusCode == 200 && response.data != null) {
-        final data = response.data;
-        final token = data['token'] ?? '';
-        final user = data['user'] ?? {};
+      final data = response.data;
 
-        if (user.isNotEmpty) {
-          await UserService.saveUser(
-            token: token,
-            id: user['id_user'] ?? user['id'] ?? 0,
-            nome: user['nome'] ?? '',
-            nivel: user['nivel'] ?? '',
-          );
+      if (response.statusCode == 200 && data != null && data['user'] != null) {
+        final user = data['user'];
 
-          if (!mounted) return;
-          Notifier.success(context, "Bem-vindo, ${user['nome'] ?? ''}!");
-          Navigator.pushReplacementNamed(context, "/dashboard");
-        } else {
-          Notifier.error(context, "Resposta inválida do servidor");
-        }
+        await UserService.saveUser(
+          token: data['token'] ?? '',
+          id: user['id'] ?? 0,
+          nome: user['nome'] ?? '',
+          nivel: user['nivel'] ?? '',
+          tipo: user['tipo'] ?? '',
+          unidade: user['unidade'] ?? 0,
+        );
+
+        if (!mounted) return;
+        Notifier.success(context, "Bem-vindo, ${user['nome']}!");
+        Navigator.pushReplacementNamed(context, "/dashboard");
       } else {
         Notifier.error(context, "Usuário ou senha inválidos");
       }
@@ -77,7 +75,6 @@ class _LoginPageState extends State<LoginPage> {
           child: SizedBox(
             width: 400,
             child: Card(
-              // usa o tema automático do Card
               elevation: theme.cardTheme.elevation,
               shape: theme.cardTheme.shape,
               child: Padding(
@@ -87,8 +84,11 @@ class _LoginPageState extends State<LoginPage> {
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      const Icon(Icons.warehouse_rounded,
-                          size: 56, color: Color(0xFF727CF5)),
+                      const Icon(
+                        Icons.warehouse_rounded,
+                        size: 56,
+                        color: Color(0xFF727CF5),
+                      ),
 
                       const SizedBox(height: 8),
                       Text(
@@ -110,7 +110,7 @@ class _LoginPageState extends State<LoginPage> {
                       TextFormField(
                         controller: _userController,
                         decoration: const InputDecoration(
-                          labelText: "Usuário ou e-mail",
+                          labelText: "Usuário",
                           prefixIcon: Icon(Icons.person_outline),
                         ),
                         validator: (v) =>
@@ -131,16 +131,18 @@ class _LoginPageState extends State<LoginPage> {
                                   ? Icons.visibility_off
                                   : Icons.visibility,
                             ),
-                            onPressed: () =>
-                                setState(() => _obscurePass = !_obscurePass),
+                            onPressed: () {
+                              setState(() => _obscurePass = !_obscurePass);
+                            },
                           ),
                         ),
                         validator: (v) =>
                             v!.isEmpty ? "Informe a senha" : null,
                       ),
+
                       const SizedBox(height: 24),
 
-                      // Botão login (usa tema global)
+                      // Botão login
                       SizedBox(
                         width: double.infinity,
                         child: ElevatedButton(
@@ -157,9 +159,9 @@ class _LoginPageState extends State<LoginPage> {
                               : const Text("Entrar no Sistema"),
                         ),
                       ),
+
                       const SizedBox(height: 16),
 
-                      // Rodapé
                       Column(
                         children: [
                           const Divider(height: 32),
