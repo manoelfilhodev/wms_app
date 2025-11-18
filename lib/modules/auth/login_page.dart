@@ -41,13 +41,14 @@ class _LoginPageState extends State<LoginPage> {
         final user = data['user'];
 
         await UserService.saveUser(
-          token: data['token'] ?? '',
-          id: user['id'] ?? 0,
-          nome: user['nome'] ?? '',
-          nivel: user['nivel'] ?? '',
-          tipo: user['tipo'] ?? '',
-          unidade: user['unidade'] ?? 0,
-        );
+                token: data['token'] ?? '',
+                id: user['id'] ?? 0,
+                nome: user['nome'] ?? '',
+                nivel: user['nivel'] ?? '',
+                tipo: user['tipo'] ?? '',
+                unidade: user['unidade'] ?? 0,
+              );
+
 
         if (!mounted) return;
         Notifier.success(context, "Bem-vindo, ${user['nome']}!");
@@ -179,7 +180,7 @@ class _LoginPageState extends State<LoginPage> {
                             style: theme.textTheme.bodySmall?.copyWith(
                               color: theme.textTheme.bodyMedium?.color,
                               fontSize: 12,
-                            ),
+                            ),'
                             textAlign: TextAlign.center,
                           ),
                           const SizedBox(height: 12),
