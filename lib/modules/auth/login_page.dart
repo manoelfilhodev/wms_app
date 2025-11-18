@@ -180,7 +180,7 @@ class _LoginPageState extends State<LoginPage> {
                             style: theme.textTheme.bodySmall?.copyWith(
                               color: theme.textTheme.bodyMedium?.color,
                               fontSize: 12,
-                            ),'
+                            ),
                             textAlign: TextAlign.center,
                           ),
                           const SizedBox(height: 12),
