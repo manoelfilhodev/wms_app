@@ -1,9 +1,22 @@
 import 'package:flutter/material.dart';
+
+import 'core/api_client.dart';
+import 'core/app_theme.dart';
 import 'modules/auth/login_page.dart';
 import 'modules/dashboard/dashboard_page.dart';
-import 'core/app_theme.dart';
+import 'modules/splash/splash_page.dart';
+
+final GlobalKey<NavigatorState> appNavigatorKey = GlobalKey<NavigatorState>();
+final GlobalKey<ScaffoldMessengerState> appScaffoldMessengerKey =
+    GlobalKey<ScaffoldMessengerState>();
 
 void main() {
+  ApiClient.setUnauthorizedHandler(() {
+    appScaffoldMessengerKey.currentState?.showSnackBar(
+      const SnackBar(content: Text('Sessão expirada. Faça login novamente.')),
+    );
+  });
+
   runApp(const MyApp());
 }
 
@@ -13,12 +26,14 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      navigatorKey: appNavigatorKey,
+      scaffoldMessengerKey: appScaffoldMessengerKey,
       title: 'Systex WMS',
       debugShowCheckedModeBanner: false,
-      theme: AppTheme.lightTheme,
-      darkTheme: AppTheme.darkTheme,
-      themeMode: ThemeMode.system, // alterna automático light/dark
-      initialRoute: '/login',
+      theme: AppTheme.systexDarkTheme,
+      darkTheme: AppTheme.systexDarkTheme,
+      themeMode: ThemeMode.dark,
+      home: const SplashPage(),
       routes: {
         '/login': (context) => const LoginPage(),
         '/dashboard': (context) => const DashboardPage(),
