@@ -1,8 +1,8 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:wms_app/core/exceptions/auth_exception.dart';
 import 'package:wms_app/core/widgets/systex_glass_card.dart';
 import 'package:wms_app/core/widgets/systex_scaffold.dart';
-import 'package:wms_app/modules/auth/auth_service.dart';
+import 'package:wms_app/services/offline_auth_service.dart';
 import 'package:wms_app/utils/notifier.dart';
 import 'package:wms_app/utils/user_service.dart';
 
@@ -17,7 +17,7 @@ class _LoginPageState extends State<LoginPage> {
   final _formKey = GlobalKey<FormState>();
   final _userController = TextEditingController();
   final _passController = TextEditingController();
-  final AuthService _authService = AuthService();
+  final OfflineAuthService _authService = OfflineAuthService();
 
   bool _loading = false;
   bool _obscurePass = true;
@@ -27,38 +27,38 @@ class _LoginPageState extends State<LoginPage> {
     setState(() => _loading = true);
 
     try {
-      final data = await _authService.login(
+      final result = await _authService.login(
         username: _userController.text.trim(),
         password: _passController.text.trim(),
       );
 
-      final token = data['token']?.toString() ?? '';
-      final dynamic userRaw = data['user'];
-      final user = userRaw is Map ? Map<String, dynamic>.from(userRaw) : null;
+      final user = result.user;
 
-      if (user != null && user.isNotEmpty) {
-        await UserService.saveUser(
-          token: token,
-          id: _toInt(user['id_user'] ?? user['id']),
-          nome: user['nome']?.toString() ?? '',
-          nivel: user['nivel']?.toString() ?? '',
-          tipo: user['tipo']?.toString() ?? '',
-          unidade: _toInt(user['unidade']),
-        );
+      await UserService.saveUser(
+        token: result.token,
+        id: _toInt(user['id_user'] ?? user['id']),
+        nome: user['nome']?.toString() ?? '',
+        nivel: user['nivel']?.toString() ?? '',
+        tipo: user['tipo']?.toString() ?? '',
+        unidade: _toInt(user['unidade']),
+      );
 
-        if (!mounted) return;
-        Notifier.success(context, "Bem-vindo, ${user['nome'] ?? ''}!");
-        Navigator.pushReplacementNamed(context, '/dashboard');
+      if (!mounted) return;
+      if (result.isOffline) {
+        Notifier.warning(context, 'Login offline com dados locais.');
       } else {
-        if (!mounted) return;
-        Notifier.error(context, 'Resposta inválida do servidor');
+        Notifier.success(context, 'Bem-vindo, ${user['nome'] ?? ''}!');
       }
+      Navigator.pushReplacementNamed(context, '/dashboard');
     } on AuthException catch (e) {
       if (!mounted) return;
       await _showAuthErrorDialog(e.message);
     } catch (e) {
       if (!mounted) return;
-      Notifier.warning(context, 'Erro de conexão: $e');
+      Notifier.warning(
+        context,
+        'Nao foi possivel autenticar agora. Verifique sua conexao e tente novamente.',
+      );
     } finally {
       if (mounted) {
         setState(() => _loading = false);
@@ -70,7 +70,7 @@ class _LoginPageState extends State<LoginPage> {
     await showDialog<void>(
       context: context,
       builder: (dialogContext) => AlertDialog(
-        title: const Text('Erro de autenticação'),
+        title: const Text('Erro de autenticacao'),
         content: Text(message),
         actions: [
           TextButton(
@@ -121,18 +121,18 @@ class _LoginPageState extends State<LoginPage> {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      'Gestão de Armazéns Inteligente',
+                      'Gestao de Armazens Inteligente',
                       style: theme.textTheme.bodyMedium,
                     ),
                     const Divider(height: 32),
                     TextFormField(
                       controller: _userController,
                       decoration: const InputDecoration(
-                        labelText: 'Usuário',
+                        labelText: 'Usuario',
                         prefixIcon: Icon(Icons.person_outline),
                       ),
                       validator: (v) =>
-                          v == null || v.isEmpty ? 'Informe o usuário' : null,
+                          v == null || v.isEmpty ? 'Informe o usuario' : null,
                     ),
                     const SizedBox(height: 16),
                     TextFormField(
@@ -173,7 +173,7 @@ class _LoginPageState extends State<LoginPage> {
                     ),
                     const SizedBox(height: 16),
                     Text(
-                      'Conexão segura via SSL • Laravel 10 backend',
+                      'Conexao segura via SSL e fallback offline-first',
                       style: theme.textTheme.bodySmall?.copyWith(
                         color: textColor?.withValues(alpha: 0.8),
                         fontSize: 12,
@@ -182,7 +182,7 @@ class _LoginPageState extends State<LoginPage> {
                     ),
                     const SizedBox(height: 6),
                     Text(
-                      'Hospedado na Azure Cloud • Infraestrutura Systex',
+                      'Infraestrutura em Azure e backend Laravel',
                       style: theme.textTheme.bodySmall?.copyWith(
                         color: textColor?.withValues(alpha: 0.8),
                         fontSize: 12,
@@ -191,7 +191,7 @@ class _LoginPageState extends State<LoginPage> {
                     ),
                     const SizedBox(height: 12),
                     Text(
-                      '© 2025 Systex Sistemas Inteligentes',
+                      '© 2026 Systex Sistemas Inteligentes',
                       style: theme.textTheme.bodySmall?.copyWith(
                         color: textColor?.withValues(alpha: 0.6),
                         fontSize: 11,

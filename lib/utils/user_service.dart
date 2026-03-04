@@ -1,5 +1,7 @@
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../services/token_storage_service.dart';
+
 class UserService {
   static Future<void> saveUser({
     required String token,
@@ -11,7 +13,8 @@ class UserService {
   }) async {
     final prefs = await SharedPreferences.getInstance();
 
-    await prefs.setString('token', token);
+    await TokenStorageService.instance.saveToken(token);
+    await TokenStorageService.instance.markNeedsRevalidation(false);
     await prefs.setInt('usuario_id', id);
     await prefs.setString('nome', nome);
     await prefs.setString('nivel', nivel);
@@ -51,8 +54,17 @@ class UserService {
   }
 
   static Future<String?> getToken() async {
+    final secureToken = await TokenStorageService.instance.getToken();
+    if (secureToken != null && secureToken.isNotEmpty) return secureToken;
+
     final prefs = await SharedPreferences.getInstance();
-    return prefs.getString('token');
+    final legacyToken = prefs.getString('token');
+    if (legacyToken != null && legacyToken.isNotEmpty) {
+      await TokenStorageService.instance.saveToken(legacyToken);
+      await prefs.remove('token');
+      return legacyToken;
+    }
+    return null;
   }
 
   // ===============================
@@ -61,5 +73,6 @@ class UserService {
   static Future<void> logout() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.clear();
+    await TokenStorageService.instance.clearToken();
   }
 }

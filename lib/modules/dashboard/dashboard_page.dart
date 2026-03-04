@@ -1,8 +1,10 @@
+﻿import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 import '../../core/app_theme.dart';
 import '../../core/widgets/systex_glass_card.dart';
 import '../../core/widgets/systex_scaffold.dart';
+import '../../ui/pages/funcionario_offline_page.dart';
 import '../armazenagem/armazenagem_page.dart';
 import '../auth/login_page.dart';
 import '../expedicao/expedicao_page.dart';
@@ -13,10 +15,10 @@ import '../separacao/separacao_page.dart';
 class DashboardPage extends StatelessWidget {
   final String userName;
 
-  const DashboardPage({super.key, this.userName = 'Usuário'});
+  const DashboardPage({super.key, this.userName = 'Usuario'});
 
   String get firstName {
-    if (userName.trim().isEmpty) return 'Usuário';
+    if (userName.trim().isEmpty) return 'Usuario';
     return userName.split(' ').first;
   }
 
@@ -27,40 +29,47 @@ class DashboardPage extends StatelessWidget {
     final crossCount = screenWidth > 900
         ? 4
         : screenWidth > 600
-        ? 3
-        : 2;
+            ? 3
+            : 2;
 
     final modules = [
       {
         'title': 'Recebimento',
-        'subtitle': 'Entrada e conferência de mercadorias',
+        'subtitle': 'Entrada e conferencia de mercadorias',
         'page': const RecebimentoPage(),
         'icon': Icons.inventory_2_outlined,
       },
       {
         'title': 'Armazenagem',
-        'subtitle': 'Movimentação e localização de produtos',
+        'subtitle': 'Movimentacao e localizacao de produtos',
         'page': const ArmazenagemPage(),
         'icon': Icons.move_down_outlined,
       },
       {
-        'title': 'Separação',
-        'subtitle': 'Picking e preparação de pedidos',
+        'title': 'Separacao',
+        'subtitle': 'Picking e preparacao de pedidos',
         'page': const SeparacaoPage(),
         'icon': Icons.playlist_add_check_circle_outlined,
       },
       {
-        'title': 'Expedição',
-        'subtitle': 'Saída e transporte de mercadorias',
+        'title': 'Expedicao',
+        'subtitle': 'Saida e transporte de mercadorias',
         'page': const ExpedicaoPage(),
         'icon': Icons.local_shipping_outlined,
       },
       {
-        'title': 'Inventário',
+        'title': 'Inventario',
         'subtitle': 'Controle e contagem de estoque',
         'page': const InventarioPage(),
         'icon': Icons.analytics_outlined,
       },
+      if (!kIsWeb)
+        {
+          'title': 'Funcionario Offline',
+          'subtitle': 'Cadastro local com sync automatico',
+          'page': const FuncionarioOfflinePage(),
+          'icon': Icons.badge_outlined,
+        },
     ];
 
     return SystexScaffold(
@@ -76,7 +85,7 @@ class DashboardPage extends StatelessWidget {
               ),
               const SizedBox(width: 6),
               Text(
-                'Olá, $firstName',
+                'Ola, $firstName',
                 style: theme.textTheme.bodyMedium?.copyWith(
                   color: SystexColors.textPrimary,
                   fontWeight: FontWeight.w600,
@@ -167,7 +176,7 @@ class DashboardPage extends StatelessWidget {
             child: Column(
               children: [
                 Text(
-                  '© 2025 • Systex Sistemas Inteligentes',
+                  '© 2026 - Systex Sistemas Inteligentes',
                   style: theme.textTheme.bodySmall?.copyWith(
                     color: SystexColors.textPrimary,
                     fontSize: 12,
@@ -175,7 +184,7 @@ class DashboardPage extends StatelessWidget {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  'Infraestrutura em Azure • Backend Laravel 10 • API SSL',
+                  'Infraestrutura em Azure - Backend Laravel - API SSL',
                   style: theme.textTheme.bodySmall,
                   textAlign: TextAlign.center,
                 ),
