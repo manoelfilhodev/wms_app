@@ -5,7 +5,7 @@ workflows:
     environment:
       flutter: "stable"   # usa versão estável já disponível na imagem para evitar downloads grandes
       xcode: latest
-      java: "11"         # adiciona versão Java explícita
+      java: "17"         # Android Gradle Plugin exige Java 17
     cache:
       cache_paths:
         - $FLUTTER_ROOT            # 👈 agora cacheia o SDK também
