@@ -5,7 +5,7 @@
 [![Codemagic](https://img.shields.io/badge/Codemagic-CI%2FCD-brightgreen?logo=codemagic)](https://codemagic.io)
 [![License](https://img.shields.io/badge/license-Proprietary-red.svg)]()
 
-Aplicativo mobile **Systex WMS 4.0** desenvolvido em **Flutter** e integrado ao backend Laravel.  
+Aplicativo mobile **Systex WMS 4.0** desenvolvido em **Flutter** e integrado ao backend Laravel.   
 Projetado para rodar em **coletores de dados, tablets e smartphones**, com suporte a funcionamento **online/offline (PWA)**.  
 
 ---
