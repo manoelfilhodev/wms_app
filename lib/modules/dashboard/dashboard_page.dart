@@ -9,6 +9,7 @@ import '../armazenagem/armazenagem_page.dart';
 import '../auth/login_page.dart';
 import '../expedicao/expedicao_page.dart';
 import '../inventario/inventario_page.dart';
+import '../kits/apontamento_kits_page.dart';
 import '../recebimento/pages/recebimento_page.dart';
 import '../separacao/separacao_page.dart';
 
@@ -62,6 +63,12 @@ class DashboardPage extends StatelessWidget {
         'subtitle': 'Controle e contagem de estoque',
         'page': const InventarioPage(),
         'icon': Icons.analytics_outlined,
+      },
+      {
+        'title': 'Kits',
+        'subtitle': 'Apontamento e montagem de kits',
+        'page': const ApontamentoKitsPage(),
+        'icon': Icons.inventory_outlined,
       },
       if (!kIsWeb)
         {

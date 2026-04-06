@@ -70,6 +70,22 @@ class LocalDatabaseService {
     ''');
 
     await db.execute('''
+      CREATE TABLE apontamentos_kits (
+        id_local INTEGER PRIMARY KEY AUTOINCREMENT,
+        id_server INTEGER,
+        palete_uid TEXT NOT NULL,
+        codigo_material TEXT NOT NULL,
+        quantidade INTEGER NOT NULL,
+        status TEXT NOT NULL,
+        apontado_por INTEGER,
+        created_at TEXT NOT NULL,
+        updated_at TEXT NOT NULL,
+        sync_status TEXT NOT NULL DEFAULT 'pending',
+        deleted_at TEXT
+      )
+    ''');
+
+    await db.execute('''
       CREATE TABLE recebimentos (
         id_local INTEGER PRIMARY KEY AUTOINCREMENT,
         id_server INTEGER,

@@ -95,6 +95,13 @@ class SyncService {
             localId: item.entityIdLocal,
             payload: payload,
           );
+        } else if (item.entityType == 'apontamentos_kits') {
+          await _syncApontamentoKitQueueItem(
+            itemId: item.id!,
+            action: item.action,
+            localId: item.entityIdLocal,
+            payload: payload,
+          );
         } else {
           // Estruturalmente pronto para outras entidades.
           await db.updateQueueStatus(id: item.id!, status: SyncStatus.synced);
@@ -273,6 +280,58 @@ class SyncService {
       }
     }
     return null;
+  }
+
+  Future<void> _syncApontamentoKitQueueItem({
+    required int itemId,
+    required String action,
+    required int localId,
+    required Map<String, dynamic> payload,
+  }) async {
+    final db = _db!;
+    if (action != 'apontar') {
+      await db.updateQueueStatus(id: itemId, status: SyncStatus.synced);
+      await db.clearQueueItem(itemId);
+      return;
+    }
+
+    try {
+      final response = await _api!.dio.post(
+        '/kits/apontar-etiqueta',
+        data: payload,
+      );
+
+      if (response.statusCode == 200) {
+        final data = response.data as Map<String, dynamic>;
+        if (data['status'] == 'ok') {
+          await db.updateByLocalId(
+            'apontamentos_kits',
+            localId,
+            {'sync_status': 'synced'},
+          );
+          await db.updateQueueStatus(id: itemId, status: SyncStatus.synced);
+          await db.clearQueueItem(itemId);
+        } else {
+          throw Exception(data['mensagem'] ?? 'Erro na API');
+        }
+      } else {
+        throw Exception('Erro HTTP ${response.statusCode}');
+      }
+    } catch (e) {
+      await db.updateQueueStatus(
+        id: itemId,
+        status: SyncStatus.error,
+        errorMessage: e.toString(),
+      );
+      await db.updateByLocalId(
+        'apontamentos_kits',
+        localId,
+        {
+          'sync_status': 'error',
+          'error_message': e.toString(),
+        },
+      );
+    }
   }
 
   Future<void> dispose() async {
