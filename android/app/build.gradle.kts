@@ -5,6 +5,10 @@ plugins {
     id("dev.flutter.flutter-gradle-plugin")
 }
 
+dependencies {
+    implementation("com.google.android.play:core:1.10.3")
+}
+
 android {
     namespace = "com.example.wms_app"
     compileSdk = flutter.compileSdkVersion
