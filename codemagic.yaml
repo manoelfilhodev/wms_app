@@ -3,9 +3,9 @@ workflows:
     name: Flutter Android Build
     max_build_duration: 60
     environment:
-      flutter: "3.35.3"   # 👈 fixa versão estável
+      flutter: "stable"   # usa versão estável já disponível na imagem para evitar downloads grandes
       xcode: latest
-      java: "11"         # 👈 adiciona versão Java explícita
+      java: "11"         # adiciona versão Java explícita
     cache:
       cache_paths:
         - $FLUTTER_ROOT            # 👈 agora cacheia o SDK também
