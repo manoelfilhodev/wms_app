@@ -6,7 +6,7 @@ import '../../core/widgets/systex_glass_card.dart';
 import '../../core/widgets/systex_scaffold.dart';
 import '../../ui/pages/funcionario_offline_page.dart';
 import '../armazenagem/armazenagem_page.dart';
-import '../auth/login_page.dart';
+import '../auth/login_page.dart' show LoginPage;
 import '../expedicao/expedicao_page.dart';
 import '../inventario/inventario_page.dart';
 import '../kits/apontamento_kits_page.dart';

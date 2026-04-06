@@ -3,7 +3,7 @@ import 'dart:ui';
 
 import 'package:flutter/material.dart';
 
-import '../auth/login_page.dart';
+import '../auth/login_page.dart' show LoginPage;
 import 'painters/grid_painter.dart';
 import 'painters/particles_painter.dart';
 
