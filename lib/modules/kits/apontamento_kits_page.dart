@@ -5,7 +5,6 @@ import 'package:awesome_dialog/awesome_dialog.dart';
 import '../../core/app_theme.dart';
 import '../../core/widgets/systex_glass_card.dart';
 import '../../core/widgets/systex_scaffold.dart';
-import '../../models/apontamento_kit.dart';
 import '../../repositories/kits_repository.dart';
 import '../../utils/notifier.dart';
 
