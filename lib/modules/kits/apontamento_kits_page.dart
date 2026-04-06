@@ -21,8 +21,6 @@ class _ApontamentoKitsPageState extends State<ApontamentoKitsPage> {
   final _paleteUidFocus = FocusNode();
   final _kitsRepository = KitsRepository();
 
-  List<ApontamentoKit> _ultimosApontamentos = [];
-  bool _isLoading = false;
   bool _isApontando = false;
   String? _feedbackMessage;
   Color? _feedbackColor;
@@ -30,7 +28,6 @@ class _ApontamentoKitsPageState extends State<ApontamentoKitsPage> {
   @override
   void initState() {
     super.initState();
-    _loadUltimosApontamentos();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _paleteUidFocus.requestFocus();
     });
@@ -43,40 +40,10 @@ class _ApontamentoKitsPageState extends State<ApontamentoKitsPage> {
     super.dispose();
   }
 
-  Future<void> _loadUltimosApontamentos() async {
-    setState(() {
-      _isLoading = true;
-      _feedbackMessage = null;
-    });
-    try {
-      final apontamentos = await _kitsRepository.listarUltimos();
-      setState(() => _ultimosApontamentos = apontamentos);
-    } catch (e) {
-      _showFeedback('Falha ao carregar apontamentos', isSuccess: false);
-    } finally {
-      setState(() => _isLoading = false);
-    }
-  }
-
-  Future<void> _apontar() async {
-    final paleteUid = _paleteUidController.text.trim();
-    if (paleteUid.isEmpty) {
-      _feedbackError();
-      _toast('Escaneie o código do palete');
-      return;
-    }
-
-    setState(() {
-      _isApontando = true;
-      _feedbackMessage = null;
-    });
-
-    try {
-      await _kitsRepository.apontar(paleteUid: paleteUid);
-      _paleteUidController.clear();
+  Future<void> _Controller.clear();
       _feedbackSuccess();
       _showSuccessAuto('Palete apontado com sucesso');
-      await _loadUltimosApontamentos();
+
     } catch (e) {
       _feedbackError();
       _toast(_extractErrorMessage(e));
@@ -141,17 +108,8 @@ class _ApontamentoKitsPageState extends State<ApontamentoKitsPage> {
 
   @override
   Widget build(BuildContext context) {
-    final visibleApontamentos = _ultimosApontamentos.take(5).toList();
-
     return SystexScaffold(
       title: 'APONTAMENTO DE KITS',
-      actions: [
-        IconButton(
-          onPressed: _loadUltimosApontamentos,
-          icon: const Icon(Icons.refresh, color: SystexColors.brandRed),
-          tooltip: 'Atualizar',
-        ),
-      ],
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
@@ -251,68 +209,6 @@ class _ApontamentoKitsPageState extends State<ApontamentoKitsPage> {
                   ),
                 ),
               ],
-            ),
-          ),
-          const SizedBox(height: 20),
-          Text(
-            'Últimos apontamentos',
-            style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 20,
-                ),
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-          ),
-          const SizedBox(height: 8),
-          Expanded(
-            child: SystexGlassCard(
-              padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 0),
-              child: _isLoading
-                  ? const Center(child: CircularProgressIndicator())
-                  : visibleApontamentos.isEmpty
-                      ? const Padding(
-                          padding: EdgeInsets.symmetric(vertical: 32),
-                          child: Center(
-                            child: Text('Nenhum apontamento realizado.'),
-                          ),
-                        )
-                      : ListView.separated(
-                          padding: const EdgeInsets.symmetric(vertical: 8),
-                          itemCount: visibleApontamentos.length,
-                          separatorBuilder: (_, __) => const Divider(height: 0),
-                          itemBuilder: (context, index) {
-                            final apontamento = visibleApontamentos[index];
-                            return ListTile(
-                              contentPadding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
-                              title: Text(
-                                apontamento.paleteUid,
-                                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                              subtitle: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    'Material: ${apontamento.codigoMaterial}',
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                  Text(
-                                    'Qtd: ${apontamento.quantidade} • ${apontamento.status}',
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                    style: const TextStyle(color: SystexColors.textSecondary),
-                                  ),
-                                ],
-                              ),
-                              trailing: Text(
-                                apontamento.updatedAt.toString().split(' ')[0],
-                                style: const TextStyle(fontSize: 12, color: SystexColors.textSecondary),
-                              ),
-                            );
-                          },
-                        ),
             ),
           ),
         ],
