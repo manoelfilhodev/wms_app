@@ -20,9 +20,9 @@ workflows:
       - name: Run tests
         script: flutter test --no-pub --coverage || true  # 👈 adiciona --no-pub e --coverage
       - name: Build APK (release)
-        script: flutter build apk --release --no-shrink  # 👈 adiciona --no-shrink para builds mais rápidos
+        script: flutter build apk --release
       - name: Build AppBundle (release)
-        script: flutter build appbundle --release --no-shrink
+        script: flutter build appbundle --release
     artifacts:
       - build/app/outputs/flutter-apk/*.apk
       - build/app/outputs/bundle/release/*.aab

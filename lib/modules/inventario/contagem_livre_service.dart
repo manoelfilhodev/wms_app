@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import '../../utils/user_service.dart';
@@ -11,7 +12,7 @@ class ContagemLivreService {
       final token = await UserService.getToken();
 
       if (usuarioId == null) {
-        print("Usuário não encontrado.");
+        debugPrint("Usuário não encontrado.");
         return false;
       }
 
@@ -31,11 +32,11 @@ class ContagemLivreService {
       if (response.statusCode == 200) {
         return true;
       } else {
-        print("Erro API: ${response.body}");
+        debugPrint("Erro API: ${response.body}");
         return false;
       }
     } catch (e) {
-      print("Exceção: $e");
+      debugPrint("Exceção: $e");
       return false;
     }
   }
