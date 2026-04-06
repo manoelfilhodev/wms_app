@@ -30,9 +30,6 @@ class _ApontamentoKitsPageState extends State<ApontamentoKitsPage> {
   void initState() {
     super.initState();
     _loadUltimosApontamentos();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _paleteUidFocus.requestFocus();
-    });
   }
 
   @override
@@ -174,7 +171,6 @@ class _ApontamentoKitsPageState extends State<ApontamentoKitsPage> {
                 TextField(
                   controller: _paleteUidController,
                   focusNode: _paleteUidFocus,
-                  autofocus: true,
                   style: const TextStyle(fontSize: 20, letterSpacing: 1.1),
                   decoration: const InputDecoration(
                     labelText: 'Palete / QR Code',

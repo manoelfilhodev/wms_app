@@ -31,9 +31,7 @@ class _LoginPageState extends State<LoginPage> {
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _userFocus.requestFocus();
-    });
+    // Removido autofocus automático para melhor UX
   }
 
   @override
@@ -211,7 +209,6 @@ class _LoginPageState extends State<LoginPage> {
                           TextFormField(
                             controller: _userController,
                             focusNode: _userFocus,
-                            autofocus: true,
                             keyboardType: TextInputType.text,
                             style: const TextStyle(fontSize: 20, letterSpacing: 1.1),
                             decoration: const InputDecoration(

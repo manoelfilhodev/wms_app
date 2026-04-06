@@ -3,13 +3,13 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:awesome_dialog/awesome_dialog.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../database/local_database_service.dart';
 import '../../services/connectivity_service.dart';
 import '../../sync/sync_service.dart';
+import '../../core/app_theme.dart';
 
 class ContagemLivrePage extends StatefulWidget {
   const ContagemLivrePage({super.key});
@@ -35,6 +35,8 @@ class _ContagemLivrePageState extends State<ContagemLivrePage> {
   bool carregando = false;
   int pendentesSync = 0;
   int? usuarioId;
+  String? _feedbackMessage;
+  Color? _feedbackColor;
 
   @override
   void initState() {
@@ -42,11 +44,7 @@ class _ContagemLivrePageState extends State<ContagemLivrePage> {
     _carregarUsuario();
     _refreshPendingCount();
     _syncWebPendingIfOnline();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) {
-        FocusScope.of(context).requestFocus(posicaoFocus);
-      }
-    });
+    // Removido autofocus automático para melhor UX
   }
 
   Future<void> _carregarUsuario() async {
@@ -160,20 +158,20 @@ class _ContagemLivrePageState extends State<ContagemLivrePage> {
 
     if (posicao.isEmpty || ean.isEmpty || quantidade.isEmpty) {
       _feedbackError();
-      _toast('Preencha todos os campos.');
+      _showFeedback('Preencha todos os campos.', isSuccess: false);
       return;
     }
 
     final qtd = int.tryParse(quantidade) ?? 0;
     if (qtd <= 0) {
       _feedbackError();
-      _toast('Quantidade invalida.');
+      _showFeedback('Quantidade inválida.', isSuccess: false);
       return;
     }
 
     if (usuarioId == null) {
       _feedbackError();
-      _toast('Usuario nao identificado.');
+      _showFeedback('Usuário não identificado.', isSuccess: false);
       return;
     }
 
@@ -212,7 +210,7 @@ class _ContagemLivrePageState extends State<ContagemLivrePage> {
 
       if (response.statusCode == 200) {
         _feedbackSuccess();
-        _showSuccessAuto('Contagem salva.');
+        _showFeedback('Contagem salva.', isSuccess: true);
         _resetCampos(keepPosicao: false);
         await _syncWebPendingIfOnline();
         await _refreshPendingCount();
@@ -279,10 +277,11 @@ class _ContagemLivrePageState extends State<ContagemLivrePage> {
     await _refreshPendingCount();
 
     _feedbackSuccess();
-    _showSuccessAuto(
+    _showFeedback(
       sku == null || sku.trim().isEmpty
-          ? 'Sem conexao. Contagem salva pendente de validacao de EAN.'
-          : 'Sem conexao. Contagem salva localmente e sera sincronizada.',
+          ? 'Sem conexão. Contagem salva pendente de validação de EAN.'
+          : 'Sem conexão. Contagem salva localmente e será sincronizada.',
+      isSuccess: true,
     );
     _resetCampos(keepPosicao: false);
 
@@ -359,19 +358,6 @@ class _ContagemLivrePageState extends State<ContagemLivrePage> {
     posicaoFocus.requestFocus();
   }
 
-  void _toast(String message) {
-    if (!mounted) return;
-    ScaffoldMessenger.of(context)
-      ..hideCurrentSnackBar()
-      ..showSnackBar(
-        SnackBar(
-          content: Text(message),
-          duration: const Duration(milliseconds: 1100),
-          behavior: SnackBarBehavior.floating,
-        ),
-      );
-  }
-
   void _feedbackSuccess() {
     HapticFeedback.lightImpact();
     SystemSound.play(SystemSoundType.click);
@@ -382,19 +368,11 @@ class _ContagemLivrePageState extends State<ContagemLivrePage> {
     SystemSound.play(SystemSoundType.alert);
   }
 
-  void _showSuccessAuto(String message) {
-    if (!mounted) return;
-    AwesomeDialog(
-      context: context,
-      dialogType: DialogType.success,
-      animType: AnimType.scale,
-      title: 'Sucesso',
-      desc: message,
-      autoHide: const Duration(milliseconds: 1100),
-      dismissOnTouchOutside: true,
-      dismissOnBackKeyPress: true,
-      showCloseIcon: false,
-    ).show();
+  void _showFeedback(String message, {required bool isSuccess}) {
+    setState(() {
+      _feedbackMessage = message;
+      _feedbackColor = isSuccess ? SystexColors.success : SystexColors.brandRed;
+    });
   }
 
   @override
@@ -417,22 +395,58 @@ class _ContagemLivrePageState extends State<ContagemLivrePage> {
         title: const Text('Contagem Livre'),
         centerTitle: false,
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
-        child: Container(
-          decoration: BoxDecoration(
-            color: const Color(0xFF404954),
-            borderRadius: BorderRadius.circular(12),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: 0.35),
-                offset: const Offset(0, 6),
-                blurRadius: 16,
+      body: Column(
+        children: [
+          if (_feedbackMessage != null) ...[
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              margin: const EdgeInsets.only(bottom: 16),
+              decoration: BoxDecoration(
+                color: _feedbackColor?.withOpacity(0.14),
+                border: Border.all(color: _feedbackColor ?? SystexColors.textSecondary),
+                borderRadius: BorderRadius.circular(16),
               ),
-            ],
-          ),
-          child: Padding(
-            padding: const EdgeInsets.all(20),
+              child: Row(
+                children: [
+                  Icon(
+                    _feedbackColor == SystexColors.success ? Icons.check_circle : Icons.error_outline,
+                    color: _feedbackColor,
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Text(
+                      _feedbackMessage!,
+                      style: TextStyle(
+                        color: _feedbackColor,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+          Expanded(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.all(16),
+              child: Container(
+                decoration: BoxDecoration(
+                  color: const Color(0xFF404954),
+                  borderRadius: BorderRadius.circular(12),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.35),
+                      offset: const Offset(0, 6),
+                      blurRadius: 16,
+                    ),
+                  ],
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.all(20),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
@@ -460,7 +474,6 @@ class _ContagemLivrePageState extends State<ContagemLivrePage> {
                 TextField(
                   controller: posicaoController,
                   focusNode: posicaoFocus,
-                  autofocus: true,
                   decoration: const InputDecoration(
                     labelText: 'Posicao',
                     prefixIcon: Icon(Icons.location_on_outlined),
@@ -531,6 +544,7 @@ class _ContagemLivrePageState extends State<ContagemLivrePage> {
               ],
             ),
           ),
+        ),
         ),
       ),
     );
