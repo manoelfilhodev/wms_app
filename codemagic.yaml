@@ -3,12 +3,10 @@ workflows:
     name: Flutter Android Build
     max_build_duration: 60
     environment:
-      flutter: "stable"   # usa versão estável já disponível na imagem para evitar downloads grandes
+      flutter: stable
       xcode: latest
-      java: "17"         # Android Gradle Plugin exige Java 17
     cache:
       cache_paths:
-        - $FLUTTER_ROOT            # 👈 agora cacheia o SDK também
         - $FLUTTER_ROOT/.pub-cache
         - $HOME/.gradle/caches
         - $HOME/.gradle/wrapper
@@ -16,9 +14,9 @@ workflows:
       - name: Install dependencies
         script: flutter pub get
       - name: Analyze project
-        script: flutter analyze || true
+        script: flutter analyze || true   # 👈 roda análise mas não quebra o build
       - name: Run tests
-        script: flutter test --no-pub --coverage || true  # 👈 adiciona --no-pub e --coverage
+        script: flutter test || true      # 👈 idem para os testes
       - name: Build APK (release)
         script: flutter build apk --release
       - name: Build AppBundle (release)
@@ -26,7 +24,6 @@ workflows:
     artifacts:
       - build/app/outputs/flutter-apk/*.apk
       - build/app/outputs/bundle/release/*.aab
-      - coverage/lcov.info  # 👈 adiciona cobertura se existir
     publishing:
       email:
         recipients:
