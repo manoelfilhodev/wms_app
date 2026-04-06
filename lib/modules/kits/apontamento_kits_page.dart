@@ -50,7 +50,7 @@ class _ApontamentoKitsPageState extends State<ApontamentoKitsPage> {
     setState(() => _isApontando = true);
 
     try {
-      await _kitsRepository.apontar(paleteUid);
+      await _kitsRepository.apontar(paleteUid: paleteUid);
       _paleteUidController.clear();
       _feedbackSuccess();
       _showSuccessAuto('Palete apontado com sucesso');
