@@ -3,6 +3,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:awesome_dialog/awesome_dialog.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -35,8 +36,6 @@ class _ContagemLivrePageState extends State<ContagemLivrePage> {
   bool carregando = false;
   int pendentesSync = 0;
   int? usuarioId;
-  String? _feedbackMessage;
-  Color? _feedbackColor;
 
   @override
   void initState() {
@@ -44,7 +43,11 @@ class _ContagemLivrePageState extends State<ContagemLivrePage> {
     _carregarUsuario();
     _refreshPendingCount();
     _syncWebPendingIfOnline();
-    // Removido autofocus automático para melhor UX
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        FocusScope.of(context).requestFocus(posicaoFocus);
+      }
+    });
   }
 
   Future<void> _carregarUsuario() async {
@@ -158,20 +161,20 @@ class _ContagemLivrePageState extends State<ContagemLivrePage> {
 
     if (posicao.isEmpty || ean.isEmpty || quantidade.isEmpty) {
       _feedbackError();
-      _showFeedback('Preencha todos os campos.', isSuccess: false);
+      _toast('Preencha todos os campos.');
       return;
     }
 
     final qtd = int.tryParse(quantidade) ?? 0;
     if (qtd <= 0) {
       _feedbackError();
-      _showFeedback('Quantidade inválida.', isSuccess: false);
+      _toast('Quantidade invalida.');
       return;
     }
 
     if (usuarioId == null) {
       _feedbackError();
-      _showFeedback('Usuário não identificado.', isSuccess: false);
+      _toast('Usuario nao identificado.');
       return;
     }
 
@@ -210,7 +213,7 @@ class _ContagemLivrePageState extends State<ContagemLivrePage> {
 
       if (response.statusCode == 200) {
         _feedbackSuccess();
-        _showFeedback('Contagem salva.', isSuccess: true);
+        _showSuccessAuto('Contagem salva.');
         _resetCampos(keepPosicao: false);
         await _syncWebPendingIfOnline();
         await _refreshPendingCount();
@@ -277,11 +280,10 @@ class _ContagemLivrePageState extends State<ContagemLivrePage> {
     await _refreshPendingCount();
 
     _feedbackSuccess();
-    _showFeedback(
+    _showSuccessAuto(
       sku == null || sku.trim().isEmpty
-          ? 'Sem conexão. Contagem salva pendente de validação de EAN.'
-          : 'Sem conexão. Contagem salva localmente e será sincronizada.',
-      isSuccess: true,
+          ? 'Sem conexao. Contagem salva pendente de validacao de EAN.'
+          : 'Sem conexao. Contagem salva localmente e sera sincronizada.',
     );
     _resetCampos(keepPosicao: false);
 
@@ -375,6 +377,44 @@ class _ContagemLivrePageState extends State<ContagemLivrePage> {
     });
   }
 
+  void _toast(String message) {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(
+        SnackBar(
+          content: Text(message),
+          duration: const Duration(milliseconds: 1100),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+  }
+
+  void _feedbackSuccess() {
+    HapticFeedback.lightImpact();
+    SystemSound.play(SystemSoundType.click);
+  }
+
+  void _feedbackError() {
+    HapticFeedback.heavyImpact();
+    SystemSound.play(SystemSoundType.alert);
+  }
+
+  void _showSuccessAuto(String message) {
+    if (!mounted) return;
+    AwesomeDialog(
+      context: context,
+      dialogType: DialogType.success,
+      animType: AnimType.scale,
+      title: 'Sucesso',
+      desc: message,
+      autoHide: const Duration(milliseconds: 1100),
+      dismissOnTouchOutside: true,
+      dismissOnBackKeyPress: true,
+      showCloseIcon: false,
+    ).show();
+  }
+
   @override
   void dispose() {
     posicaoController.dispose();
@@ -395,58 +435,22 @@ class _ContagemLivrePageState extends State<ContagemLivrePage> {
         title: const Text('Contagem Livre'),
         centerTitle: false,
       ),
-      body: Column(
-        children: [
-          if (_feedbackMessage != null) ...[
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-              margin: const EdgeInsets.only(bottom: 16),
-              decoration: BoxDecoration(
-                color: _feedbackColor?.withOpacity(0.14),
-                border: Border.all(color: _feedbackColor ?? SystexColors.textSecondary),
-                borderRadius: BorderRadius.circular(16),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(16),
+        child: Container(
+          decoration: BoxDecoration(
+            color: const Color(0xFF404954),
+            borderRadius: BorderRadius.circular(12),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.35),
+                offset: const Offset(0, 6),
+                blurRadius: 16,
               ),
-              child: Row(
-                children: [
-                  Icon(
-                    _feedbackColor == SystexColors.success ? Icons.check_circle : Icons.error_outline,
-                    color: _feedbackColor,
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Text(
-                      _feedbackMessage!,
-                      style: TextStyle(
-                        color: _feedbackColor,
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
-          Expanded(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.all(16),
-              child: Container(
-                decoration: BoxDecoration(
-                  color: const Color(0xFF404954),
-                  borderRadius: BorderRadius.circular(12),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.35),
-                      offset: const Offset(0, 6),
-                      blurRadius: 16,
-                    ),
-                  ],
-                ),
-                child: Padding(
-                  padding: const EdgeInsets.all(20),
+            ],
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(20),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
@@ -474,6 +478,7 @@ class _ContagemLivrePageState extends State<ContagemLivrePage> {
                 TextField(
                   controller: posicaoController,
                   focusNode: posicaoFocus,
+                  autofocus: true,
                   decoration: const InputDecoration(
                     labelText: 'Posicao',
                     prefixIcon: Icon(Icons.location_on_outlined),
@@ -544,7 +549,6 @@ class _ContagemLivrePageState extends State<ContagemLivrePage> {
               ],
             ),
           ),
-        ),
         ),
       ),
     );

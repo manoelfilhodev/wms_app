@@ -28,7 +28,9 @@ class _ConferenciaPageState extends State<ConferenciaPage> {
   @override
   void initState() {
     super.initState();
-    // Removido autofocus automático para melhor UX
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _idFocus.requestFocus();
+    });
   }
 
   @override
@@ -150,6 +152,7 @@ class _ConferenciaPageState extends State<ConferenciaPage> {
                   TextFormField(
                     controller: _idController,
                     focusNode: _idFocus,
+                    autofocus: true,
                     style: const TextStyle(fontSize: 20, letterSpacing: 1.1),
                     decoration: const InputDecoration(
                       labelText: 'Recebimento / NF',

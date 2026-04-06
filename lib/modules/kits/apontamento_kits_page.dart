@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:awesome_dialog/awesome_dialog.dart';
 
 import '../../core/app_theme.dart';
 import '../../core/widgets/systex_glass_card.dart';
@@ -30,6 +31,9 @@ class _ApontamentoKitsPageState extends State<ApontamentoKitsPage> {
   void initState() {
     super.initState();
     _loadUltimosApontamentos();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _paleteUidFocus.requestFocus();
+    });
   }
 
   @override
@@ -57,7 +61,8 @@ class _ApontamentoKitsPageState extends State<ApontamentoKitsPage> {
   Future<void> _apontar() async {
     final paleteUid = _paleteUidController.text.trim();
     if (paleteUid.isEmpty) {
-      _showFeedback('Escaneie o código do palete', isSuccess: false);
+      _feedbackError();
+      _toast('Escaneie o código do palete');
       return;
     }
 
@@ -69,10 +74,12 @@ class _ApontamentoKitsPageState extends State<ApontamentoKitsPage> {
     try {
       await _kitsRepository.apontar(paleteUid: paleteUid);
       _paleteUidController.clear();
-      _showFeedback('Palete apontado com sucesso', isSuccess: true);
+      _feedbackSuccess();
+      _showSuccessAuto('Palete apontado com sucesso');
       await _loadUltimosApontamentos();
     } catch (e) {
-      _showFeedback(_extractErrorMessage(e), isSuccess: false);
+      _feedbackError();
+      _toast(_extractErrorMessage(e));
     } finally {
       setState(() => _isApontando = false);
       _paleteUidFocus.requestFocus();
@@ -84,6 +91,44 @@ class _ApontamentoKitsPageState extends State<ApontamentoKitsPage> {
       _feedbackMessage = message;
       _feedbackColor = isSuccess ? SystexColors.success : SystexColors.brandRed;
     });
+  }
+
+  void _toast(String message) {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(
+        SnackBar(
+          content: Text(message),
+          duration: const Duration(milliseconds: 1100),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+  }
+
+  void _feedbackSuccess() {
+    HapticFeedback.lightImpact();
+    SystemSound.play(SystemSoundType.click);
+  }
+
+  void _feedbackError() {
+    HapticFeedback.heavyImpact();
+    SystemSound.play(SystemSoundType.alert);
+  }
+
+  void _showSuccessAuto(String message) {
+    if (!mounted) return;
+    AwesomeDialog(
+      context: context,
+      dialogType: DialogType.success,
+      animType: AnimType.scale,
+      title: 'Sucesso',
+      desc: message,
+      autoHide: const Duration(milliseconds: 1100),
+      dismissOnTouchOutside: true,
+      dismissOnBackKeyPress: true,
+      showCloseIcon: false,
+    ).show();
   }
 
   String _extractErrorMessage(Object error) {
@@ -171,6 +216,7 @@ class _ApontamentoKitsPageState extends State<ApontamentoKitsPage> {
                 TextField(
                   controller: _paleteUidController,
                   focusNode: _paleteUidFocus,
+                  autofocus: true,
                   style: const TextStyle(fontSize: 20, letterSpacing: 1.1),
                   decoration: const InputDecoration(
                     labelText: 'Palete / QR Code',
