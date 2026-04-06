@@ -302,26 +302,40 @@ class SyncService {
     }
 
     try {
-      final response = await _api!.dio.post(
-        '/api/kits/apontar-etiqueta',
-        data: payload,
-      );
+      final response = await _api!.apontarKit(payload);
 
-      if (response.statusCode == 200) {
-        final data = response.data as Map<String, dynamic>;
-        if (data['status'] == 'ok') {
-          await db.updateByLocalId(
-            'apontamentos_kits',
-            localId,
-            {'sync_status': 'synced'},
-          );
-          await db.updateQueueStatus(id: itemId, status: SyncStatus.synced);
-          await db.clearQueueItem(itemId);
-        } else {
-          throw Exception('API retornou status: ${data['status']}, mensagem: ${data['mensagem'] ?? 'sem mensagem'}');
+      if (response['status'] == 'ok') {
+        final updatedFields = <String, dynamic>{
+          'sync_status': SyncStatus.synced.value,
+          'updated_at': DateTime.now().toIso8601String(),
+          'status': 'APONTADO',
+        };
+
+        final rawData = response['data'] is Map<String, dynamic>
+            ? Map<String, dynamic>.from(response['data'] as Map)
+            : <String, dynamic>{};
+
+        final codigoMaterial = rawData['codigo_material']?.toString() ??
+            rawData['codigoMaterial']?.toString() ?? '';
+        final quantidade = (rawData['quantidade'] as num?)?.toInt() ??
+            int.tryParse(rawData['quantidade']?.toString() ?? '') ?? 0;
+        final idServer = _extractServerId(rawData) ?? _extractServerId(response);
+
+        if (codigoMaterial.isNotEmpty) {
+          updatedFields['codigo_material'] = codigoMaterial;
         }
+        if (quantidade != 0) {
+          updatedFields['quantidade'] = quantidade;
+        }
+        if (idServer != null) {
+          updatedFields['id_server'] = idServer;
+        }
+
+        await db.updateByLocalId('apontamentos_kits', localId, updatedFields);
+        await db.updateQueueStatus(id: itemId, status: SyncStatus.synced);
+        await db.clearQueueItem(itemId);
       } else {
-        throw Exception('Erro HTTP ${response.statusCode}: ${response.data}');
+        throw Exception(response['mensagem']?.toString() ?? 'Erro na API');
       }
     } catch (e) {
       await db.updateQueueStatus(
@@ -333,7 +347,7 @@ class SyncService {
         'apontamentos_kits',
         localId,
         {
-          'sync_status': 'error',
+          'sync_status': SyncStatus.error.value,
           'error_message': e.toString(),
         },
       );

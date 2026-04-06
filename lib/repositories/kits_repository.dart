@@ -41,9 +41,9 @@ class KitsRepository {
     final now = DateTime.now();
     final entity = ApontamentoKit(
       paleteUid: paleteUid.trim(),
-      codigoMaterial: '', // Será preenchido pela API
-      quantidade: 0, // Será preenchido pela API
-      status: 'APONTADO',
+      codigoMaterial: '',
+      quantidade: 0,
+      status: 'PENDENTE',
       apontadoPor: userId,
       createdAt: now,
       updatedAt: now,
@@ -52,19 +52,40 @@ class KitsRepository {
 
     final idLocal = await _database.insert('apontamentos_kits', entity.toMap());
     final saved = entity.copyWith(idLocal: idLocal);
-
-    await _database.enqueueSync(
-      entityType: 'apontamentos_kits',
-      entityIdLocal: idLocal,
-      action: 'apontar',
-      payload: {
-        'palete_uid': paleteUid,
-        'user_id': userId,
-      },
-    );
+    final payload = {'palete_uid': paleteUid.trim()};
 
     if (_connectivity.isOnline) {
-      await _syncService.runAutoSync();
+      final response = await _apiService.apontarKit(payload);
+      if (response['status'] == 'ok') {
+        await _database.updateByLocalId(
+          'apontamentos_kits',
+          idLocal,
+          {
+            'sync_status': SyncStatus.synced.value,
+            'updated_at': DateTime.now().toIso8601String(),
+            'status': 'APONTADO',
+          },
+        );
+        await _syncService.runAutoSync();
+      } else {
+        await _database.updateByLocalId(
+          'apontamentos_kits',
+          idLocal,
+          {
+            'sync_status': SyncStatus.error.value,
+            'updated_at': DateTime.now().toIso8601String(),
+            'error_message': response['mensagem']?.toString(),
+          },
+        );
+        throw Exception(response['mensagem']?.toString() ?? 'Erro na API');
+      }
+    } else {
+      await _database.enqueueSync(
+        entityType: 'apontamentos_kits',
+        entityIdLocal: idLocal,
+        action: 'apontar',
+        payload: payload,
+      );
     }
 
     return saved;
@@ -72,24 +93,19 @@ class KitsRepository {
 
   Future<void> syncApontamento(int idLocal, Map<String, dynamic> payload) async {
     try {
-      final response = await _apiService.dio.post(
-        '/kits/apontar-etiqueta',
-        data: payload,
-      );
-
-      if (response.statusCode == 200) {
-        final data = response.data as Map<String, dynamic>;
-        if (data['status'] == 'ok') {
-          await _database.updateByLocalId(
-            'apontamentos_kits',
-            idLocal,
-            {'sync_status': SyncStatus.synced.value},
-          );
-        } else {
-          throw Exception(data['mensagem'] ?? 'Erro na API');
-        }
+      final response = await _apiService.apontarKit(payload);
+      if (response['status'] == 'ok') {
+        await _database.updateByLocalId(
+          'apontamentos_kits',
+          idLocal,
+          {
+            'sync_status': SyncStatus.synced.value,
+            'updated_at': DateTime.now().toIso8601String(),
+            'status': 'APONTADO',
+          },
+        );
       } else {
-        throw Exception('Erro HTTP ${response.statusCode}');
+        throw Exception(response['mensagem']?.toString() ?? 'Erro na API');
       }
     } catch (e) {
       await _database.updateByLocalId(

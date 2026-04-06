@@ -64,6 +64,18 @@ class ApiService {
     return _asMap(response.data);
   }
 
+  Future<Map<String, dynamic>> apontarKit(Map<String, dynamic> payload) async {
+    try {
+      final response = await _dio.post('/kits/apontar-etiqueta', data: payload);
+      return _asMap(response.data);
+    } on DioException catch (e) {
+      if (e.response?.data != null) {
+        return _asMap(e.response!.data);
+      }
+      rethrow;
+    }
+  }
+
   Future<Map<String, dynamic>?> buscarDescricaoContagemLivrePorEan(String ean) async {
     final response = await _dio.get(
       '/contagem-livre/buscarDescricaoApi',
