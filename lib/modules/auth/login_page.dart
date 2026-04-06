@@ -1,4 +1,5 @@
 ﻿import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:wms_app/core/app_theme.dart';
 import 'package:wms_app/core/exceptions/auth_exception.dart';
 import 'package:wms_app/core/widgets/systex_glass_card.dart';
@@ -227,7 +228,7 @@ class _LoginPageState extends State<LoginPage> {
                           TextFormField(
                             controller: _passController,
                             focusNode: _passFocus,
-                            keyboardType: TextInputType.text,
+                            keyboardType: TextInputType.number,
                             obscureText: _obscurePass,
                             style: const TextStyle(fontSize: 20, letterSpacing: 1.1),
                             decoration: InputDecoration(
@@ -246,6 +247,9 @@ class _LoginPageState extends State<LoginPage> {
                             ),
                             textInputAction: TextInputAction.go,
                             onFieldSubmitted: (_) => _login(),
+                            inputFormatters: [
+                              FilteringTextInputFormatter.digitsOnly,
+                            ],
                             validator: (v) =>
                                 v == null || v.isEmpty ? 'Digite sua senha' : null,
                           ),
