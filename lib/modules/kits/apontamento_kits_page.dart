@@ -5,7 +5,6 @@ import '../../core/widgets/systex_glass_card.dart';
 import '../../core/widgets/systex_scaffold.dart';
 import '../../models/apontamento_kit.dart';
 import '../../repositories/kits_repository.dart';
-import '../../services/connectivity_service.dart';
 import '../../utils/notifier.dart';
 
 class ApontamentoKitsPage extends StatefulWidget {
@@ -18,7 +17,6 @@ class ApontamentoKitsPage extends StatefulWidget {
 class _ApontamentoKitsPageState extends State<ApontamentoKitsPage> {
   final _paleteUidController = TextEditingController();
   final _kitsRepository = KitsRepository();
-  final _connectivity = ConnectivityService.instance;
 
   List<ApontamentoKit> _ultimosApontamentos = [];
   bool _isLoading = false;

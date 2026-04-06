@@ -127,6 +127,7 @@ class _LoginPageState extends State<LoginPage> {
                     const Divider(height: 32),
                     TextFormField(
                       controller: _userController,
+                      keyboardType: TextInputType.number,
                       decoration: const InputDecoration(
                         labelText: 'Usuario',
                         prefixIcon: Icon(Icons.person_outline),

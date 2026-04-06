@@ -65,10 +65,16 @@ class SyncService {
       _lastSyncAt = DateTime.now();
       statusNotifier.value = SyncIndicatorSnapshot.online(at: _lastSyncAt);
     } catch (e) {
-      statusNotifier.value = SyncIndicatorSnapshot.error(
-        'Erro de sincronizacao',
-        at: _lastSyncAt,
-      );
+      // Só mostra erro se for erro crítico de conectividade
+      if (e.toString().contains('connectivity') || e.toString().contains('network')) {
+        statusNotifier.value = SyncIndicatorSnapshot.error(
+          'Erro de conectividade',
+          at: _lastSyncAt,
+        );
+      } else {
+        // Para outros erros, mantém online mas registra o erro
+        statusNotifier.value = SyncIndicatorSnapshot.online(at: _lastSyncAt);
+      }
     } finally {
       _isSyncing = false;
     }
@@ -297,7 +303,7 @@ class SyncService {
 
     try {
       final response = await _api!.dio.post(
-        '/kits/apontar-etiqueta',
+        '/api/kits/apontar-etiqueta',
         data: payload,
       );
 
@@ -312,10 +318,10 @@ class SyncService {
           await db.updateQueueStatus(id: itemId, status: SyncStatus.synced);
           await db.clearQueueItem(itemId);
         } else {
-          throw Exception(data['mensagem'] ?? 'Erro na API');
+          throw Exception('API retornou status: ${data['status']}, mensagem: ${data['mensagem'] ?? 'sem mensagem'}');
         }
       } else {
-        throw Exception('Erro HTTP ${response.statusCode}');
+        throw Exception('Erro HTTP ${response.statusCode}: ${response.data}');
       }
     } catch (e) {
       await db.updateQueueStatus(

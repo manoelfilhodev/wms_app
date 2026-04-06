@@ -12,7 +12,7 @@ class LocalDatabaseService {
   static final LocalDatabaseService instance = LocalDatabaseService._();
 
   static const _databaseName = 'wms_offline_first.db';
-  static const _databaseVersion = 2;
+  static const _databaseVersion = 3;
 
   Database? _database;
 
@@ -183,34 +183,43 @@ class LocalDatabaseService {
   }
 
   Future<void> _onUpgrade(Database db, int oldVersion, int newVersion) async {
-    await db.execute('''
-      CREATE TABLE IF NOT EXISTS contagem_livre (
-        id_local INTEGER PRIMARY KEY AUTOINCREMENT,
-        id_server INTEGER,
-        contado_por INTEGER NOT NULL,
-        sku TEXT NOT NULL,
-        ficha TEXT NOT NULL,
-        quantidade INTEGER NOT NULL,
-        data_hora TEXT NOT NULL,
-        created_at TEXT NOT NULL,
-        updated_at TEXT NOT NULL,
-        sync_status TEXT NOT NULL DEFAULT 'pending',
-        deleted_at TEXT
-      )
-    ''');
+    if (oldVersion < 2) {
+      await db.execute('''
+        CREATE TABLE IF NOT EXISTS contagem_livre (
+          id_local INTEGER PRIMARY KEY AUTOINCREMENT,
+          id_server INTEGER,
+          contado_por INTEGER NOT NULL,
+          sku TEXT NOT NULL,
+          ficha TEXT NOT NULL,
+          quantidade INTEGER NOT NULL,
+          data_hora TEXT NOT NULL,
+          created_at TEXT NOT NULL,
+          updated_at TEXT NOT NULL,
+          sync_status TEXT NOT NULL DEFAULT 'pending',
+          deleted_at TEXT
+        )
+      ''');
 
-    await db.execute('''
-      CREATE TABLE IF NOT EXISTS ean_cache (
-        ean TEXT PRIMARY KEY,
-        sku TEXT NOT NULL,
-        descricao TEXT,
-        updated_at TEXT NOT NULL
-      )
-    ''');
+      await db.execute('''
+        CREATE TABLE IF NOT EXISTS ean_cache (
+          ean TEXT PRIMARY KEY,
+          sku TEXT NOT NULL,
+          descricao TEXT,
+          updated_at TEXT NOT NULL
+        )
+      ''');
 
-    await db.execute(
-      'CREATE INDEX IF NOT EXISTS idx_contagem_livre_sync_status ON contagem_livre(sync_status)',
-    );
+      await db.execute(
+        'CREATE INDEX IF NOT EXISTS idx_contagem_livre_sync_status ON contagem_livre(sync_status)',
+      );
+    }
+
+    if (oldVersion < 3) {
+      // Adiciona coluna error_message às tabelas que precisam
+      await db.execute('ALTER TABLE apontamentos_kits ADD COLUMN error_message TEXT');
+      await db.execute('ALTER TABLE contagem_livre ADD COLUMN error_message TEXT');
+      await db.execute('ALTER TABLE funcionarios ADD COLUMN error_message TEXT');
+    }
   }
 
   Future<int> insert(String table, Map<String, dynamic> data) async {
