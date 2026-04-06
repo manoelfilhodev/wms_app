@@ -36,6 +36,8 @@ class _ContagemLivrePageState extends State<ContagemLivrePage> {
   bool carregando = false;
   int pendentesSync = 0;
   int? usuarioId;
+  String? _feedbackMessage;
+  Color? _feedbackColor;
 
   @override
   void initState() {

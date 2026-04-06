@@ -39,10 +39,21 @@ class _ApontamentoKitsPageState extends State<ApontamentoKitsPage> {
     super.dispose();
   }
 
-  Future<void> _Controller.clear();
+  Future<void> _apontar() async {
+    final paleteUid = _paleteUidController.text.trim();
+    if (paleteUid.isEmpty) {
+      _feedbackError();
+      _toast('Digite o código do palete');
+      return;
+    }
+
+    setState(() => _isApontando = true);
+
+    try {
+      await _kitsRepository.apontar(paleteUid);
+      _paleteUidController.clear();
       _feedbackSuccess();
       _showSuccessAuto('Palete apontado com sucesso');
-
     } catch (e) {
       _feedbackError();
       _toast(_extractErrorMessage(e));
