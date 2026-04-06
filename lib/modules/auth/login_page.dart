@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:wms_app/core/app_theme.dart';
 import 'package:wms_app/core/exceptions/auth_exception.dart';
