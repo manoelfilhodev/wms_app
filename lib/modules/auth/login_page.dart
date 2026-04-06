@@ -334,28 +334,28 @@ class _LoginPageState extends State<LoginPage> {
                     const SizedBox(height: 16),
                     Text(
                       'Conexao segura via SSL e fallback offline-first',
-                      style: theme.textTheme.bodySmall?.copyWith(
-                        color: textColor?.withValues(alpha: 0.8),
-                        fontSize: 12,
-                      ),
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                            color: SystexColors.textSecondary,
+                            fontSize: 12,
+                          ),
                       textAlign: TextAlign.center,
                     ),
                     const SizedBox(height: 6),
                     Text(
                       'Infraestrutura em Azure e backend Laravel',
-                      style: theme.textTheme.bodySmall?.copyWith(
-                        color: textColor?.withValues(alpha: 0.8),
-                        fontSize: 12,
-                      ),
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                            color: SystexColors.textSecondary,
+                            fontSize: 12,
+                          ),
                       textAlign: TextAlign.center,
                     ),
                     const SizedBox(height: 12),
                     Text(
                       '© 2026 Systex Sistemas Inteligentes',
-                      style: theme.textTheme.bodySmall?.copyWith(
-                        color: textColor?.withValues(alpha: 0.6),
-                        fontSize: 11,
-                      ),
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                            color: SystexColors.textSecondary,
+                            fontSize: 11,
+                          ),
                     ),
                   ],
                 ),
