@@ -98,12 +98,14 @@ class _ContagemLivrePageState extends State<ContagemLivrePage> {
           final produto = data['data'];
           final foundSku = produto['sku']?.toString();
           final descricao = produto['descricao']?.toString() ?? '';
+
           if (foundSku != null && foundSku.isNotEmpty) {
             setState(() {
               sku = foundSku;
               infoProduto = '$foundSku - $descricao';
               infoIsWarning = false;
             });
+
             if (!kIsWeb) {
               await LocalDatabaseService.instance.cacheEan(
                 ean: normalized,
@@ -144,6 +146,7 @@ class _ContagemLivrePageState extends State<ContagemLivrePage> {
     if (cached != null) {
       final cachedSku = cached['sku']?.toString() ?? '';
       final descricao = cached['descricao']?.toString() ?? '';
+
       if (!mounted) return;
       setState(() {
         sku = cachedSku;
@@ -196,6 +199,7 @@ class _ContagemLivrePageState extends State<ContagemLivrePage> {
     }
 
     setState(() => carregando = true);
+
     final dataHora = DateTime.now().toIso8601String();
     final payload = {
       'contado_por': usuarioId,
@@ -206,7 +210,9 @@ class _ContagemLivrePageState extends State<ContagemLivrePage> {
     };
 
     try {
-      final uri = Uri.parse('https://systex.com.br/wms/public/api/contagem-livre/store');
+      final uri = Uri.parse(
+        'https://systex.com.br/wms/public/api/contagem-livre/store',
+      );
       final response = await http.post(
         uri,
         headers: {'Content-Type': 'application/json'},
@@ -256,12 +262,15 @@ class _ContagemLivrePageState extends State<ContagemLivrePage> {
     if (kIsWeb) {
       await _saveWebPending({
         'contado_por': contadoPor,
-        'sku': (sku != null && sku.trim().isNotEmpty) ? sku.trim() : '__EAN_PENDING__:$ean',
+        'sku': (sku != null && sku.trim().isNotEmpty)
+            ? sku.trim()
+            : '__EAN_PENDING__:$ean',
         'ean': ean,
         'ficha': ficha,
         'quantidade': quantidade,
         'data_hora': dataHoraIso,
       });
+
       await _refreshPendingCount();
       _feedbackSuccess();
       _showSuccessAuto(
@@ -279,6 +288,7 @@ class _ContagemLivrePageState extends State<ContagemLivrePage> {
       quantidade: quantidade,
       dataHoraIso: dataHoraIso,
     );
+
     await _refreshPendingCount();
 
     _feedbackSuccess();
@@ -313,20 +323,25 @@ class _ContagemLivrePageState extends State<ContagemLivrePage> {
 
   Future<void> _syncWebPendingIfOnline() async {
     if (!kIsWeb || !ConnectivityService.instance.isOnline) return;
+
     final prefs = await SharedPreferences.getInstance();
     final current = prefs.getStringList(_webPendingKey) ?? <String>[];
     if (current.isEmpty) return;
 
     final remaining = <String>[];
+
     for (final item in current) {
       try {
         final payload = Map<String, dynamic>.from(jsonDecode(item) as Map);
-        final uri = Uri.parse('https://systex.com.br/wms/public/api/contagem-livre/store');
+        final uri = Uri.parse(
+          'https://systex.com.br/wms/public/api/contagem-livre/store',
+        );
         final response = await http.post(
           uri,
           headers: {'Content-Type': 'application/json'},
           body: jsonEncode(payload),
         );
+
         if (response.statusCode != 200) {
           remaining.add(item);
         }
@@ -352,13 +367,18 @@ class _ContagemLivrePageState extends State<ContagemLivrePage> {
     if (!keepPosicao) {
       posicaoController.clear();
     }
+
     eanController.clear();
     quantidadeController.clear();
+
     setState(() {
       infoProduto = '';
       sku = null;
       infoIsWarning = false;
+      _feedbackMessage = null;
+      _feedbackColor = null;
     });
+
     posicaoFocus.requestFocus();
   }
 
@@ -373,9 +393,11 @@ class _ContagemLivrePageState extends State<ContagemLivrePage> {
   }
 
   void _showFeedback(String message, {required bool isSuccess}) {
+    if (!mounted) return;
     setState(() {
       _feedbackMessage = message;
-      _feedbackColor = isSuccess ? SystexColors.success : SystexColors.brandRed;
+      _feedbackColor =
+          isSuccess ? SystexColors.success : SystexColors.brandRed;
     });
   }
 
@@ -392,18 +414,11 @@ class _ContagemLivrePageState extends State<ContagemLivrePage> {
       );
   }
 
-  void _feedbackSuccess() {
-    HapticFeedback.lightImpact();
-    SystemSound.play(SystemSoundType.click);
-  }
-
-  void _feedbackError() {
-    HapticFeedback.heavyImpact();
-    SystemSound.play(SystemSoundType.alert);
-  }
-
   void _showSuccessAuto(String message) {
     if (!mounted) return;
+
+    _showFeedback(message, isSuccess: true);
+
     AwesomeDialog(
       context: context,
       dialogType: DialogType.success,
@@ -431,6 +446,7 @@ class _ContagemLivrePageState extends State<ContagemLivrePage> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+
     return Scaffold(
       backgroundColor: theme.scaffoldBackgroundColor,
       appBar: AppBar(
@@ -471,7 +487,7 @@ class _ContagemLivrePageState extends State<ContagemLivrePage> {
                       color: pendentesSync > 0
                           ? Colors.amber.shade300
                           : theme.textTheme.bodySmall?.color
-                              ?.withValues(alpha: 0.8),
+                                ?.withValues(alpha: 0.8),
                       fontWeight: FontWeight.w600,
                     ),
                   ),
@@ -526,7 +542,9 @@ class _ContagemLivrePageState extends State<ContagemLivrePage> {
                 ),
                 const SizedBox(height: 24),
                 carregando
-                    ? const Center(child: CircularProgressIndicator(strokeWidth: 2))
+                    ? const Center(
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
                     : ElevatedButton.icon(
                         onPressed: salvarContagem,
                         icon: const Icon(Icons.save_outlined),
@@ -543,7 +561,9 @@ class _ContagemLivrePageState extends State<ContagemLivrePage> {
                   child: Text(
                     'Powered by Laravel API - Systex Infra Azure',
                     style: theme.textTheme.bodySmall?.copyWith(
-                      color: theme.textTheme.bodySmall?.color?.withValues(alpha: 0.7),
+                      color: theme.textTheme.bodySmall?.color?.withValues(
+                        alpha: 0.7,
+                      ),
                       fontSize: 11,
                     ),
                   ),
