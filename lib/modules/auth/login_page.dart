@@ -1,5 +1,4 @@
 ﻿import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:wms_app/core/app_theme.dart';
 import 'package:wms_app/core/exceptions/auth_exception.dart';
 import 'package:wms_app/core/widgets/systex_glass_card.dart';
@@ -212,20 +211,17 @@ class _LoginPageState extends State<LoginPage> {
                             controller: _userController,
                             focusNode: _userFocus,
                             autofocus: true,
-                            keyboardType: TextInputType.number,
+                            keyboardType: TextInputType.text,
                             style: const TextStyle(fontSize: 20, letterSpacing: 1.1),
                             decoration: const InputDecoration(
-                              labelText: 'Matrícula',
-                              hintText: 'Digite sua matrícula',
+                              labelText: 'Login',
+                              hintText: 'Digite seu login',
                               border: OutlineInputBorder(),
                             ),
                             textInputAction: TextInputAction.next,
                             onFieldSubmitted: (_) => _passFocus.requestFocus(),
-                            inputFormatters: [
-                              FilteringTextInputFormatter.digitsOnly,
-                            ],
                             validator: (v) =>
-                                v == null || v.isEmpty ? 'Digite sua matrícula' : null,
+                                v == null || v.isEmpty ? 'Digite seu login' : null,
                           ),
                           const SizedBox(height: 16),
                           TextFormField(
