@@ -1,7 +1,9 @@
-# Flutter Wrapper
--keep class io.flutter.** { *; }
--keep class io.flutter.plugins.** { *; }
--keep class io.flutter.embedding.** { *; }
+# Flutter
+# Keep only the generated registrant (loaded reflectively).
+-keep class io.flutter.plugins.GeneratedPluginRegistrant { *; }
+# Flutter may reference deferred component classes even when Play Feature Delivery is not used.
+-dontwarn com.google.android.play.core.**
+-dontwarn io.flutter.embedding.engine.deferredcomponents.**
 
 # Dart
 -keepclasseswithmembernames class ** {
