@@ -1,9 +1,10 @@
 import '../../core/api_client.dart';
+import '../../core/config/app_config.dart';
 import '../../utils/user_service.dart';
 import 'models/inventario_ciclico_requisicao.dart';
 
 class InventarioCiclicoService {
-  static const String _baseUrl = 'https://systex.com.br/wms/public/api';
+  static const String _baseUrl = AppConfig.apiBaseUrl;
 
   final ApiClient _apiClient;
 

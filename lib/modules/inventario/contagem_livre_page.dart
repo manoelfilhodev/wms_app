@@ -7,6 +7,7 @@ import 'package:awesome_dialog/awesome_dialog.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../../core/config/app_config.dart';
 import '../../database/local_database_service.dart';
 import '../../services/connectivity_service.dart';
 import '../../sync/sync_service.dart';
@@ -87,8 +88,9 @@ class _ContagemLivrePageState extends State<ContagemLivrePage> {
     }
 
     try {
-      final uri = Uri.parse(
-        'https://systex.com.br/wms/public/api/contagem-livre/buscarDescricaoApi?ean=$normalized',
+      final uri = AppConfig.apiUri(
+        '/contagem-livre/buscarDescricaoApi',
+        queryParameters: {'ean': normalized},
       );
       final response = await http.get(uri);
 
@@ -210,9 +212,7 @@ class _ContagemLivrePageState extends State<ContagemLivrePage> {
     };
 
     try {
-      final uri = Uri.parse(
-        'https://systex.com.br/wms/public/api/contagem-livre/store',
-      );
+      final uri = AppConfig.apiUri('/contagem-livre/store');
       final response = await http.post(
         uri,
         headers: {'Content-Type': 'application/json'},
@@ -333,9 +333,7 @@ class _ContagemLivrePageState extends State<ContagemLivrePage> {
     for (final item in current) {
       try {
         final payload = Map<String, dynamic>.from(jsonDecode(item) as Map);
-        final uri = Uri.parse(
-          'https://systex.com.br/wms/public/api/contagem-livre/store',
-        );
+        final uri = AppConfig.apiUri('/contagem-livre/store');
         final response = await http.post(
           uri,
           headers: {'Content-Type': 'application/json'},

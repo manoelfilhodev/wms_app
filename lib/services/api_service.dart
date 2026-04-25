@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
 
+import '../core/config/app_config.dart';
 import '../services/token_storage_service.dart';
 
 class ApiService {
@@ -33,7 +34,7 @@ class ApiService {
   }
 
   static final ApiService instance = ApiService._();
-  static const String _baseUrl = 'https://systex.com.br/wms/public/api';
+  static const String _baseUrl = AppConfig.apiBaseUrl;
 
   late final Dio _dio;
   Dio get dio => _dio;

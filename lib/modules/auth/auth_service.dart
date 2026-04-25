@@ -1,10 +1,11 @@
 import 'package:dio/dio.dart';
 
 import '../../core/api_client.dart';
+import '../../core/config/app_config.dart';
 import '../../core/exceptions/auth_exception.dart';
 
 class AuthService {
-  static const String _baseUrl = 'https://systex.com.br/wms/public/api';
+  static const String _baseUrl = AppConfig.apiBaseUrl;
   final ApiClient _apiClient;
 
   AuthService({ApiClient? apiClient})

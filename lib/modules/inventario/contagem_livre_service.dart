@@ -1,11 +1,10 @@
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import '../../core/config/app_config.dart';
 import '../../utils/user_service.dart';
 
 class ContagemLivreService {
-  static const String baseUrl = "https://seu-dominio.com/api"; // ajuste aqui
-
   static Future<bool> salvarContagem(List<Map<String, dynamic>> itens) async {
     try {
       final usuarioId = await UserService.getUserId();
@@ -17,7 +16,7 @@ class ContagemLivreService {
       }
 
       final response = await http.post(
-        Uri.parse("$baseUrl/contagem-livre"),
+        AppConfig.apiUri('/contagem-livre'),
         headers: {
           "Content-Type": "application/json",
           if (token != null) "Authorization": "Bearer $token",

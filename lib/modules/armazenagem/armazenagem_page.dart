@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:awesome_dialog/awesome_dialog.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../../core/config/app_config.dart';
 import '../layout/main_layout.dart';
 
 class ArmazenagemPage extends StatefulWidget {
@@ -42,8 +43,10 @@ class _ArmazenagemPageState extends State<ArmazenagemPage> {
 
   Future<void> validarPosicao(String posicao) async {
     try {
-      final url = Uri.parse(
-          "https://systex.com.br/wms/public/api/armazenagem/buscarPosicoes?term=$posicao");
+      final url = AppConfig.apiUri(
+        '/armazenagem/buscarPosicoes',
+        queryParameters: {'term': posicao},
+      );
       final response = await http.get(url);
 
       if (response.statusCode == 200) {
@@ -68,8 +71,10 @@ class _ArmazenagemPageState extends State<ArmazenagemPage> {
 
   Future<void> buscarDescricao(String sku) async {
     try {
-      final url = Uri.parse(
-          "https://systex.com.br/wms/public/api/armazenagem/buscarDescricaoApi?sku=$sku");
+      final url = AppConfig.apiUri(
+        '/armazenagem/buscarDescricaoApi',
+        queryParameters: {'sku': sku},
+      );
       final response = await http.get(url);
 
       if (response.statusCode == 200) {
@@ -117,8 +122,7 @@ class _ArmazenagemPageState extends State<ArmazenagemPage> {
     setState(() => carregando = true);
 
     try {
-      final url = Uri.parse(
-          "https://systex.com.br/wms/public/api/armazenagem/store-api");
+      final url = AppConfig.apiUri('/armazenagem/store-api');
 
       final response = await http.post(
         url,
