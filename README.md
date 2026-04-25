@@ -1,60 +1,141 @@
-# Systex WMS App
+# Systex WMS Mobility Platform
 
-Aplicativo mobile do ambiente WMS da Systex Sistemas Inteligentes, desenvolvido em Flutter para apoiar operações de armazém em coletores, tablets e smartphones. O projeto integra módulos operacionais a uma API Laravel e possui base offline-first em evolução para uso em cenários de conectividade instável.
+### Engenharia operacional para logística real
 
-## Objetivo
+## Visão Geral Institucional
 
-Fornecer uma interface móvel para execução de processos de WMS, reduzindo dependência de estações fixas e permitindo registro operacional em campo. O app deve preservar dados críticos localmente quando não houver conexão e sincronizar com o backend quando a conectividade retornar.
+O Systex WMS Mobility Platform é o aplicativo mobile corporativo da Systex Sistemas Inteligentes para apoio às operações de armazém em ambientes WMS. O projeto foi construído em Flutter para uso em coletores, tablets e smartphones, com integração à API Laravel do ecossistema WMS.
 
-## Stack
+A plataforma tem como foco levar processos operacionais para o ponto real de execução: docas, ruas de armazenagem, áreas de separação, inventário e expedição. O projeto está em evolução contínua e documenta de forma explícita os módulos consolidados, os módulos parciais e os pontos que ainda exigem validação de negócio, arquitetura e segurança.
 
-- Flutter e Dart
+## Objetivo Operacional
+
+O objetivo do app é permitir que usuários operacionais registrem, consultem e sincronizem atividades de WMS diretamente em dispositivos móveis, reduzindo dependência de estações fixas e aumentando aderência ao fluxo físico da operação.
+
+Diretrizes operacionais:
+
+- apoiar operação móvel em ambiente logístico;
+- integrar o app ao backend Laravel do WMS;
+- preservar dados críticos durante instabilidade de rede;
+- sincronizar registros locais quando a conexão retornar;
+- evoluir módulos sem comprometer contratos de API, dados locais ou segurança.
+
+## Stack Tecnológica
+
+- Flutter
+- Dart `>=3.0.0 <4.0.0`
 - Android como alvo operacional principal
 - API Laravel
-- Dio e HTTP client legado em transição
 - SQLite local com `sqflite`
-- `shared_preferences`
-- `flutter_secure_storage`
-- `connectivity_plus`
-- Codemagic para CI/CD
+- Sync Queue local
+- Dio para comunicação HTTP principal
+- `package:http` ainda presente em módulos legados em transição
+- `flutter_secure_storage` para token
+- `shared_preferences` para dados locais não sensíveis
+- `connectivity_plus` para status de conexão
+- Codemagic para pipeline de build
 
-## Módulos Principais
+## Módulos Operacionais
 
-- Autenticação: login online com fallback offline.
-- Dashboard: entrada para os módulos operacionais.
-- Recebimento: fluxo inicial de recebimento e conferência, com integrações pendentes.
-- Armazenagem: validação de posição, SKU/EAN e registro de armazenamento.
-- Separação: módulo presente, pendente de validação funcional ampla.
-- Expedição: módulo presente, pendente de validação funcional ampla.
-- Inventário: contagem livre, contagem dirigida e ajustes.
-- Inventário cíclico: requisições e itens integrados via API.
-- Kits: apontamento de kits/paletes com suporte parcial à sincronização.
-- Funcionário Offline: fluxo de referência para CRUD local e sincronização.
+### Autenticação
 
-## Arquitetura Geral
+Login integrado à API Laravel, com fallback offline em plataformas não Web. O login offline está em evolução para reforço de segurança, expiração e política de hash.
 
-O aplicativo está organizado em camadas:
+### Dashboard
 
-- `lib/core`: bootstrap, tema, widgets base, configuração e client de API.
-- `lib/modules`: telas e serviços por domínio funcional.
-- `lib/services`: autenticação, API, conectividade e token.
-- `lib/repositories`: persistência por entidade e regras de acesso a dados.
-- `lib/database`: banco local SQLite.
-- `lib/sync`: fila, estado e rotinas de sincronização.
-- `lib/models`: entidades e objetos de apoio.
-- `lib/ui`: telas e widgets ligados ao offline-first.
+Tela de entrada operacional para navegação entre os módulos disponíveis no app.
 
-## Offline-First
+### Recebimento
 
-O app possui suporte offline principalmente para entidades já conectadas ao SQLite e à fila `sync_queue`. O fluxo atual contempla:
+Estrutura de páginas, models e services presente. Integrações e regras completas de conferência ainda estão pendentes de validação.
 
-1. Registro local quando não há internet.
-2. Marcação de status de sincronização.
-3. Enfileiramento de payload.
-4. Sincronização automática quando a conexão retorna.
-5. Registro de conflitos em `sync_conflicts`.
+### Armazenagem
 
-Nem todos os módulos operacionais estão totalmente offline-first. Cada novo fluxo deve validar impacto em dados locais, API e conflitos antes de ser implementado.
+Fluxo para validação de posição, consulta de SKU/EAN e registro de armazenagem. O módulo existe, mas sua comunicação HTTP ainda está em transição para padronização total em Dio.
+
+### Separação
+
+Módulo presente no app. Regras de picking, reserva, divergência e baixa operacional ainda precisam validação funcional.
+
+### Expedição
+
+Módulo presente no app. Regras de conferência final, transporte e status de saída ainda precisam validação funcional.
+
+### Inventário
+
+Inclui contagem livre, contagem dirigida e ajustes de estoque. A contagem livre possui suporte offline parcial, cache de EAN e sincronização para plataformas não Web.
+
+### Inventário Cíclico
+
+Módulo com requisições e itens integrados via API. Contratos e cenários operacionais devem continuar documentados conforme evolução.
+
+### Kits
+
+Fluxos de apontamento de kits/paletes com integração parcial à fila de sincronização. Status oficiais e regras de reprocessamento ainda exigem validação.
+
+### Funcionário Offline
+
+Fluxo de referência para CRUD offline-first, usando SQLite, `sync_queue`, status local e sincronização automática.
+
+## Arquitetura Operacional
+
+A arquitetura operacional do app considera conectividade variável como condição normal de campo. O aplicativo deve conseguir registrar dados localmente, manter status de sincronização e reenviar pendências quando a conexão estiver disponível.
+
+Fluxo operacional base:
+
+1. Usuário executa uma atividade no dispositivo.
+2. O app valida dados mínimos da operação.
+3. Quando online, o registro é enviado à API Laravel.
+4. Quando offline, o registro é persistido localmente.
+5. A fila de sincronização registra ação e payload.
+6. Ao retornar a conexão, o app tenta sincronizar pendências.
+7. Conflitos e erros devem ser registrados para análise e correção.
+
+## Arquitetura Técnica
+
+Estrutura principal:
+
+```text
+lib/
+  core/           Configuração, bootstrap, tema, widgets base e API client
+  database/       SQLite local e schema offline-first
+  models/         Entidades e objetos de apoio
+  modules/        Telas e services por domínio operacional
+  repositories/   Coordenação entre dados locais, API e sync
+  services/       API, autenticação, conectividade e token
+  sync/           Sync Queue, status e sincronização automática
+  ui/             Telas e widgets auxiliares offline-first
+  utils/          Utilidades compartilhadas
+```
+
+Componentes técnicos relevantes:
+
+- `AppConfig`: configuração central da API via `API_BASE_URL`, com fallback de produção.
+- `ApiClient` e `ApiService`: base de comunicação HTTP com Dio.
+- `LocalDatabaseService`: SQLite local.
+- `SyncService`: envio de pendências e pull de dados sincronizáveis.
+- `TokenStorageService`: armazenamento seguro de token.
+- `OfflineAuthService`: autenticação online/offline.
+
+## Estratégia Offline-First
+
+Offline-first é requisito crítico para operação logística real, especialmente em ambientes com cobertura instável, coletores em movimento ou áreas com bloqueio de sinal.
+
+Estado atual:
+
+- SQLite local disponível em plataformas não Web.
+- Fila `sync_queue` para pendências.
+- Tabelas locais para usuários, funcionários, contagem livre, kits, recebimentos, estoque, movimentações, cache EAN e conflitos.
+- Banner global de status de sincronização.
+- Sincronização explícita para funcionários, contagem livre e apontamentos de kits.
+
+Em evolução:
+
+- política unificada de conflitos por módulo;
+- padronização offline para todos os módulos operacionais;
+- expiração do login offline em 15 dias;
+- remoção do uso de token no SQLite, mantendo token somente em `flutter_secure_storage`;
+- migrations SQLite idempotentes e compatíveis com produção.
 
 ## Instalação
 
@@ -65,81 +146,78 @@ Pré-requisitos:
 - Android SDK
 - Dispositivo físico ou emulador Android
 
-Comandos:
+Instalar dependências:
 
 ```bash
 flutter pub get
 ```
 
-## Como Rodar
+## Execução
 
-Ambiente padrão, usando fallback de produção definido no app:
+Execução padrão:
 
 ```bash
 flutter run
 ```
 
-Informando API por ambiente:
+Execução com API por ambiente:
 
 ```bash
 flutter run --dart-define=API_BASE_URL=https://host/api
 ```
 
-Android:
+## Qualidade e Validação
+
+Comandos de validação:
 
 ```bash
-flutter run -d android
-```
-
-Web para diagnóstico:
-
-```bash
-flutter run -d web-server --web-port=8080 --web-hostname=0.0.0.0
-```
-
-## Como Testar
-
-Validações recomendadas:
-
-```bash
-flutter pub get
 flutter analyze
 flutter test
 flutter build apk --debug
 ```
 
-Observação: a suíte de testes ainda precisa evoluir. O teste atual deve ser revisado para refletir o app real.
+Critérios esperados:
 
-## Estrutura de Pastas
+- análise estática sem erros críticos;
+- testes automatizados compatíveis com o comportamento real do app;
+- build Android debug gerado com sucesso;
+- alterações offline acompanhadas de validação de fila, status e sincronização;
+- alterações de banco acompanhadas de plano de migration.
 
-```text
-lib/
-  core/
-  database/
-  models/
-  modules/
-  repositories/
-  services/
-  sync/
-  ui/
-  utils/
-  main.dart
-docs/
-android/
-ios/
-web/
-test/
-assets/
-```
+Observação: a suíte de testes ainda está em evolução e deve substituir testes template por validações reais de app, autenticação, sync e banco local.
 
-## Engenharia
+## Engenharia e Governança com Agentes IA
 
-Este projeto segue o Systex AI Engineering Framework descrito em `AGENTS.md`, com atuação coordenada dos agentes ATLAS, ATHENA, PROMETEU, GAIA, VULCAN, ARES, APOLLO, HERMES, ORION e HADES.
+Este projeto segue o Systex AI Engineering Framework definido em `AGENTS.md`.
 
-## Assinatura Systex
+Fluxo obrigatório de engenharia:
 
-Projeto: Systex WMS App  
+1. ATLAS: orquestração e direção do projeto.
+2. ATHENA: validação de regras de negócio.
+3. PROMETEU: validação de arquitetura.
+4. GAIA: avaliação de dados, local storage e API.
+5. VULCAN: estrutura base e padrões.
+6. PROMETEU: contratos de API.
+7. HERMES: implementação Flutter/mobile.
+8. ORION: testes, build e regressões.
+9. HADES: segurança, tokens, permissões e dados sensíveis.
+
+Toda mudança funcional deve respeitar regra de negócio, arquitetura, dados, segurança e qualidade antes de ser considerada pronta.
+
+## Licença
+
+Este projeto é proprietário da Systex Sistemas Inteligentes. O uso é permitido apenas em contexto interno ou expressamente autorizado.
+
+É proibida a cópia, redistribuição, venda, sublicenciamento ou uso não autorizado do código, documentação, assets e configurações associadas.
+
+Consulte `LICENSE` para os termos proprietários completos.
+
+## Assinatura Oficial Systex
+
+Projeto: Systex WMS Mobility Platform  
+Produto/Repositório: `wms_app`  
 Empresa: Systex Sistemas Inteligentes  
-Uso: interno ou autorizado  
-Licença: proprietária  
-Responsável técnico documentado: ver `docs/PROJECT_SIGNATURE.md`
+Finalidade: mobilidade operacional para ambiente WMS  
+Stack: Flutter, Dart, SQLite, Sync Queue e API Laravel  
+Governança: Systex AI Engineering Framework  
+Licença: proprietária Systex  
