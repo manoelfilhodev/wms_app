@@ -1,105 +1,145 @@
-# 📱 Systex WMS 4.0 – App Mobile
+# Systex WMS App
 
-[![Flutter](https://img.shields.io/badge/Flutter-3.x-blue?logo=flutter)](https://flutter.dev/)
-[![Dart](https://img.shields.io/badge/Dart-2.x-blue?logo=dart)](https://dart.dev/)
-[![Codemagic](https://img.shields.io/badge/Codemagic-CI%2FCD-brightgreen?logo=codemagic)](https://codemagic.io)
-[![License](https://img.shields.io/badge/license-Proprietary-red.svg)]()
+Aplicativo mobile do ambiente WMS da Systex Sistemas Inteligentes, desenvolvido em Flutter para apoiar operações de armazém em coletores, tablets e smartphones. O projeto integra módulos operacionais a uma API Laravel e possui base offline-first em evolução para uso em cenários de conectividade instável.
 
-Aplicativo mobile **Systex WMS 4.0** desenvolvido em **Flutter** e integrado ao backend Laravel.   
-Projetado para rodar em **coletores de dados, tablets e smartphones**, com suporte a funcionamento **online/offline (PWA)**.  
+## Objetivo
 
----
+Fornecer uma interface móvel para execução de processos de WMS, reduzindo dependência de estações fixas e permitindo registro operacional em campo. O app deve preservar dados críticos localmente quando não houver conexão e sincronizar com o backend quando a conectividade retornar.
 
-## 🚀 Tecnologias Utilizadas
-- Flutter 3.x
-- Dart 2.x
-- Dio (HTTP Client)
-- SharedPreferences (armazenamento local)
-- Material 3
-- Integração REST API com Laravel WMS 4.0
+## Stack
 
----
+- Flutter e Dart
+- Android como alvo operacional principal
+- API Laravel
+- Dio e HTTP client legado em transição
+- SQLite local com `sqflite`
+- `shared_preferences`
+- `flutter_secure_storage`
+- `connectivity_plus`
+- Codemagic para CI/CD
 
-## 📂 Estrutura de Pastas
-lib/
-├── core/ # Configurações, cliente API, storage
-├── models/ # Modelos (User, Recebimento, etc.)
-├── services/ # Comunicação com API (Auth, Recebimento, etc.)
-├── screens/ # Telas (Login, Dashboard, Recebimento, etc.)
-├── widgets/ # Componentes reutilizáveis
-└── main.dart # Ponto de entrada
+## Módulos Principais
 
+- Autenticação: login online com fallback offline.
+- Dashboard: entrada para os módulos operacionais.
+- Recebimento: fluxo inicial de recebimento e conferência, com integrações pendentes.
+- Armazenagem: validação de posição, SKU/EAN e registro de armazenamento.
+- Separação: módulo presente, pendente de validação funcional ampla.
+- Expedição: módulo presente, pendente de validação funcional ampla.
+- Inventário: contagem livre, contagem dirigida e ajustes.
+- Inventário cíclico: requisições e itens integrados via API.
+- Kits: apontamento de kits/paletes com suporte parcial à sincronização.
+- Funcionário Offline: fluxo de referência para CRUD local e sincronização.
 
----
+## Arquitetura Geral
 
-## ⚙️ Funcionalidades
-✅ Login integrado ao backend Laravel  
-✅ Dashboard com KPIs em tempo real  
-✅ Gestão de Recebimento, Expedição e Inventário  
-✅ Contagem de Paletes e Kits  
-✅ Suporte a múltiplos usuários e permissões  
-✅ PWA para uso em **coletores offline**  
-✅ Compatível com Android (APK/AAB) e iOS (IPA)  
+O aplicativo está organizado em camadas:
 
----
+- `lib/core`: bootstrap, tema, widgets base, configuração e client de API.
+- `lib/modules`: telas e serviços por domínio funcional.
+- `lib/services`: autenticação, API, conectividade e token.
+- `lib/repositories`: persistência por entidade e regras de acesso a dados.
+- `lib/database`: banco local SQLite.
+- `lib/sync`: fila, estado e rotinas de sincronização.
+- `lib/models`: entidades e objetos de apoio.
+- `lib/ui`: telas e widgets ligados ao offline-first.
 
-## 📊 Dashboard
-- Indicadores de produtividade por setor  
-- KPIs de recebimento, armazenagem e expedição  
-- Gráficos em tempo real  
+## Offline-First
 
----
+O app possui suporte offline principalmente para entidades já conectadas ao SQLite e à fila `sync_queue`. O fluxo atual contempla:
 
-## 🔧 Instalação e Build
+1. Registro local quando não há internet.
+2. Marcação de status de sincronização.
+3. Enfileiramento de payload.
+4. Sincronização automática quando a conexão retorna.
+5. Registro de conflitos em `sync_conflicts`.
 
-### Pré-requisitos
-- Flutter 3.x  
-- Dart SDK  
-- Git  
-- Android SDK (para gerar APK/AAB)  
-- Xcode (para builds iOS)  
+Nem todos os módulos operacionais estão totalmente offline-first. Cada novo fluxo deve validar impacto em dados locais, API e conflitos antes de ser implementado.
 
-### Passos
+## Instalação
+
+Pré-requisitos:
+
+- Flutter SDK compatível com Dart `>=3.0.0 <4.0.0`
+- Git
+- Android SDK
+- Dispositivo físico ou emulador Android
+
+Comandos:
+
 ```bash
-# Clonar o repositório
-git clone git@github.com:manoelfilhodev/wms_app.git
-
-# Entrar no diretório
-cd wms_app
-
-# Instalar dependências
 flutter pub get
+```
 
-# Rodar no navegador (modo web)
+## Como Rodar
+
+Ambiente padrão, usando fallback de produção definido no app:
+
+```bash
+flutter run
+```
+
+Informando API por ambiente:
+
+```bash
+flutter run --dart-define=API_BASE_URL=https://host/api
+```
+
+Android:
+
+```bash
+flutter run -d android
+```
+
+Web para diagnóstico:
+
+```bash
 flutter run -d web-server --web-port=8080 --web-hostname=0.0.0.0
+```
 
-# Gerar APK (Android)
-flutter build apk --release
+## Como Testar
 
-# Gerar AAB (Android App Bundle)
-flutter build appbundle --release
+Validações recomendadas:
 
-🛠️ Roadmap
+```bash
+flutter pub get
+flutter analyze
+flutter test
+flutter build apk --debug
+```
 
-📦 Integração completa com módulos de Expedição e Inventário
+Observação: a suíte de testes ainda precisa evoluir. O teste atual deve ser revisado para refletir o app real.
 
-🔄 Sincronização avançada offline/online (IndexedDB + Laravel Sync)
+## Estrutura de Pastas
 
-🔔 Implementação de notificações push
+```text
+lib/
+  core/
+  database/
+  models/
+  modules/
+  repositories/
+  services/
+  sync/
+  ui/
+  utils/
+  main.dart
+docs/
+android/
+ios/
+web/
+test/
+assets/
+```
 
-☁️ Publicação contínua via Codemagic
+## Engenharia
 
-📲 Disponibilização na Google Play e App Store
+Este projeto segue o Systex AI Engineering Framework descrito em `AGENTS.md`, com atuação coordenada dos agentes ATLAS, ATHENA, PROMETEU, GAIA, VULCAN, ARES, APOLLO, HERMES, ORION e HADES.
 
+## Assinatura Systex
 
-📜 Licença
-
-Este projeto é de uso interno da Systex Sistemas Inteligentes.
-Não é permitido uso comercial sem autorização.
-
-👨‍💻 Autor
-
-Systex Sistemas Inteligentes
-🌐 systex.com.br
-
-📧 manoel.filho.mf@icloud.com
+Projeto: Systex WMS App  
+Empresa: Systex Sistemas Inteligentes  
+Uso: interno ou autorizado  
+Licença: proprietária  
+Responsável técnico documentado: ver `docs/PROJECT_SIGNATURE.md`
